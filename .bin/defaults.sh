@@ -1,4 +1,5 @@
 #! /bin/sh
+set -eux
 
 ## Dockを自動的に非表示
 defaults write com.apple.dock autohide -bool true

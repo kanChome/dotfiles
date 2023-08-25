@@ -65,5 +65,4 @@ setopt inc_append_history
 
 bindkey '^R' history-incremental-search-backward
 bindkey '^S' history-incremental-search-forward
-export HOMEBREW_GITHUB_API_TOKEN=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
 export HISTTIMEFORMAT="%F %T "

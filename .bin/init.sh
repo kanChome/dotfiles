@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -eux
 
 if [ "$(uname)" != "Darwin" ] ; then
 	echo "Not macOS!"

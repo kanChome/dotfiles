@@ -1,5 +1,6 @@
 #!/bin/bash
-set -eu
+set -eux
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 for dotfile in "${SCRIPT_DIR}"/.??* ; do
