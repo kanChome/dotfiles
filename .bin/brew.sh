@@ -1,12 +1,9 @@
 #!/bin/bash
 set -eu
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source ${SCRIPT_DIR}/common.sh
 
-if [ "$(uname)" != "Darwin" ] ; then
-	echo "Not macOS!"
-	exit 1
-fi
-
-source ./common.sh
+isRunningOnMac || exit 1
 
 info "installing brewfile"
 

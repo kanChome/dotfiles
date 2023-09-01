@@ -7,3 +7,10 @@ info () {
 success () {
   printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
 }
+
+isRunningOnMac () {
+  if [ "$(uname)" != "Darwin" ] ; then
+    echo "Not macOS!"
+    exit 1
+  fi
+}

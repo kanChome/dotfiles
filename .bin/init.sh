@@ -1,11 +1,8 @@
 #!/bin/bash
 set -eu
-
-if [ "$(uname)" != "Darwin" ] ; then
-	echo "Not macOS!"
-	exit 1
-fi
-source ./common.sh
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source ${SCRIPT_DIR}/common.sh
+isRunningOnMac || exit 1
 
 info "init"
 xcode-select --install > /dev/null
