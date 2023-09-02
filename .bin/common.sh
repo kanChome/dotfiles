@@ -8,9 +8,13 @@ success () {
   printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
 }
 
+error () {
+  printf "\r\033[2K  [\033[0;31mERROR\033[0m] $1\n"
+}
+
 isRunningOnMac () {
   if [ "$(uname)" != "Darwin" ] ; then
-    echo "Not macOS!"
+    error "Not macOS!"
     exit 1
   fi
 }

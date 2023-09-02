@@ -12,4 +12,4 @@ for dotfile in "${SCRIPT_DIR}"/.??* ; do
 
     ln -fnsv "$dotfile" "$HOME"
 done
-info "done linking dotfiles"
+success "done linking dotfiles"

@@ -19,4 +19,4 @@ else
 	eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-info "done init"
+success "done init"
