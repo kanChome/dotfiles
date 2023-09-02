@@ -19,4 +19,8 @@ else
 	eval "$(/usr/local/bin/brew shellenv)"
 fi
 
+# install p10k font
+wget -O ~/Downloads/MesloLGSNFRegular.ttf "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+cp MesloLGSNFRegular.ttf ~/Library/Fonts/
+
 success "done init"
