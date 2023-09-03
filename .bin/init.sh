@@ -20,7 +20,7 @@ else
 fi
 
 # install p10k font
-wget -O ~/Downloads/MesloLGSNFRegular.ttf "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
-cp MesloLGSNFRegular.ttf ~/Library/Fonts/
+wget -O /tmp/MesloLGSNFRegular.ttf "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+mv /tmp/MesloLGSNFRegular.ttf ~/Library/Fonts
 
 success "done init"
