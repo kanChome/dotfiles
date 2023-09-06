@@ -54,20 +54,6 @@ function history-all { history -E 1 }
 
 bindkey '^h' zaw-history
 
-setopt share_history
-
-setopt EXTENDED_HISTORY
-
-setopt hist_ignore_space
-
-setopt hist_verify
-
-setopt hist_reduce_blanks
-
-setopt hist_save_no_dups
-
-setopt hist_expand
-
 bindkey '^R' history-incremental-search-backward
 bindkey '^S' history-incremental-search-forward
 export HISTTIMEFORMAT="%F %T "
@@ -79,6 +65,27 @@ HISTSIZE=10000
 
 # ヒストリファイルに保存するコマンド数
 SAVEHIST=10000
+
+# ターミナル間で履歴を共有
+setopt share_history
+
+# タイムスタンプ、コマンド実行時間を記録
+setopt EXTENDED_HISTORY
+
+# スペース始まりのコマンドはヒストリに残さない
+setopt hist_ignore_space
+
+# 履歴展開後にコマンドを自動的に実行するのではなく、ユーザーが確認できるようにする
+setopt hist_verify
+
+# 履歴に保存されるコマンド行の先頭、末尾の空白を削除
+setopt hist_reduce_blanks
+
+# 連続する重複コマンドを履歴に1回だけ保存
+setopt hist_save_no_dups
+
+# 履歴展開を有効化
+setopt hist_expand
 
 # 重複するコマンド行は古い方を削除
 setopt hist_ignore_all_dups
