@@ -18,4 +18,4 @@ jobs:
 
       # Initialize and place dotfiles
       - name: Setup Dotfiles
-        run: make init && make link && make defaults
+        run: make init && make link && make defaults && make brew

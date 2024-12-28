@@ -5,3 +5,6 @@
 	br = branch
 [core]
 	editor = vim
+[user]
+	name = kanChome
+	email = study.hellbird@gmail.com

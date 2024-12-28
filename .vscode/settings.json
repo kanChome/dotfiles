@@ -1,0 +1,85 @@
+{
+  "editor.fontFamily": "HackGenNerd HackGen, Source Han Code JP, Ricty-Regular, Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "editor.wordWrap": "on",
+  "workbench.iconTheme": "material-icon-theme",
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx1G -Xms100m -javaagent:\"/Users/ryohirano/.vscode/extensions/gabrielbb.vscode-lombok-1.0.1/server/lombok.jar\"",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-11",
+      "path": "/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home",
+      "default": true
+    },
+    {
+      "name": "JavaSE-17",
+      "path": "/Library/Java/JavaVirtualMachines/openjdk-17.jdk/Contents/Home"
+    }
+  ],
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "explorer.confirmDelete": false,
+  "java.semanticHighlighting.enabled": true,
+  "explorer.confirmDragAndDrop": false,
+  "java.refactor.renameFromFileExplorer": "autoApply",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "workbench.colorTheme": "GitHub Dark",
+  "workbench.editor.closeEmptyGroups": false,
+  "editor.fontSize": 14,
+  "java.format.onType.enabled": false,
+  "workbench.editor.enablePreview": false,
+  "editor.codeActionsOnSave": {
+    // "source.fixAll.eslint": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "sonarlint.ls.javaHome": "/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home",
+  "editor.accessibilitySupport": "on",
+
+  "asciidoc.use_kroki": true,
+  "java.project.importOnFirstTimeStartup": "automatic",
+  "redhat.telemetry.enabled": true,
+  "files.autoGuessEncoding": true,
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "terminal.integrated.tabs.enabled": true,
+  "vetur.dev.vlsPath": ".config/yarn/global/node_modules/vls",
+  "vetur.experimental.templateInterpolationService": true,
+  "quarkus.tools.alwaysShowWelcomePage": false,
+  "editor.tabSize": 2,
+  "bracket-pair-colorizer-2.depreciation-notice": false,
+  "liveshare.accessibility.soundsEnabled": false,
+  "go.toolsManagement.autoUpdate": true,
+  "editor.formatOnSave": true,
+  "boot-java.rewrite.reconcile": true,
+  "sonarlint.rules": {
+    "java:S2095": {
+      "level": "off"
+    },
+    "java:S1854": {
+      "level": "off"
+    }
+  },
+  "accessibility.signals.lineHasError": {
+    "sound": "off"
+  },
+  "accessibility.signals.diffLineInserted": {
+    "sound": "off"
+  },
+  "accessibility.signals.diffLineDeleted": {
+    "sound": "off"
+  },
+  "accessibility.signals.diffLineModified": {
+    "sound": "off"
+  }
+}
