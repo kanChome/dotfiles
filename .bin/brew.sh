@@ -3,7 +3,10 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source ${SCRIPT_DIR}/common.sh
 
-isRunningOnMac || exit 1
+if ! isRunningOnMac && ! isRunningOnWSL; then
+	error "This script requires macOS or WSL"
+	exit 1
+fi
 
 info "installing brewfile"
 

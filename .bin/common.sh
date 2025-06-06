@@ -13,8 +13,25 @@ error () {
 }
 
 isRunningOnMac () {
-  if [ "$(uname)" != "Darwin" ] ; then
-    error "Not macOS!"
-    exit 1
+  if [ "$(uname)" = "Darwin" ] ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+isRunningOnWSL () {
+  if [ -f /proc/version ] && grep -q microsoft /proc/version; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+isRunningOnLinux () {
+  if [ "$(uname)" = "Linux" ] ; then
+    return 0
+  else
+    return 1
   fi
 }
