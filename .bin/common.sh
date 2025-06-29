@@ -245,71 +245,15 @@ checkInternetConnection() {
   return 1
 }
 
-# スクリプトファイルの検証
-validateScript() {
-  local file="$1"
-  local description="${2:-script}"
-  
-  if [ ! -f "$file" ]; then
-    error "File not found: $file"
-    return 1
-  fi
-  
-  # ファイルが空でないかチェック
-  if [ ! -s "$file" ]; then
-    error "$description file is empty"
-    return 1
-  fi
-  
-  # HTMLコンテンツの検出（よくあるHTMLタグをチェック）
-  local first_few_lines=$(head -10 "$file")
-  if echo "$first_few_lines" | grep -qi -E '(<html|<head|<body|<title|<script|<!DOCTYPE)'; then
-    error "Downloaded file appears to be HTML content instead of $description"
-    debug "First few lines of the file:"
-    head -5 "$file" | while IFS= read -r line; do
-      debug "  $line"
-    done
-    return 1
-  fi
-  
-  # Google検索結果ページの検出
-  if echo "$first_few_lines" | grep -qi -E '(google\.com|search.*results)'; then
-    error "Downloaded file appears to be a Google search page"
-    warning "The URL may be blocked or redirected"
-    return 1
-  fi
-  
-  # 典型的なエラーページの検出
-  if echo "$first_few_lines" | grep -qi -E '(404.*not found|403.*forbidden|500.*error)'; then
-    error "Downloaded file appears to be an error page"
-    return 1
-  fi
-  
-  # スクリプトファイルの場合、shebangをチェック
-  if [[ "$description" == *"script"* ]] || [[ "$file" == *.sh ]]; then
-    local first_line=$(head -1 "$file")
-    if [[ "$first_line" != \#!* ]]; then
-      warning "$description does not start with a shebang"
-      warning "First line: $first_line"
-      # これは警告のみで、エラーにはしない（some scriptsはshebangなしでも動作）
-    fi
-  fi
-  
-  debug "$description validation passed"
-  return 0
-}
-
-# 安全なダウンロード（スクリプト検証付き）
+# 安全なダウンロード
 safeDownload() {
   local url="$1"
   local output="$2"
   local description="${3:-file}"
-  local validate_as_script="${4:-false}"
   
   info "Downloading $description"
   debug "URL: $url"
   debug "Output: $output"
-  debug "Validate as script: $validate_as_script"
   
   # インターネット接続確認
   if ! checkInternetConnection; then
@@ -319,79 +263,25 @@ safeDownload() {
     return 1
   fi
   
-  # 複数のダウンロード方法とURL
-  local download_methods=()
-  local urls=()
-  
-  # URLに応じてフォールバックURLを準備
-  if [[ "$url" == *"raw.githubusercontent.com"* ]]; then
-    urls=("$url")
-    # GitHubの場合、jsdelivr CDNをフォールバックとして追加
-    local jsdelivr_url=$(echo "$url" | sed 's|raw\.githubusercontent\.com/\([^/]*\)/\([^/]*\)/\([^/]*\)/|cdn.jsdelivr.net/gh/\1/\2@\3/|')
-    urls+=("$jsdelivr_url")
-    # fastgit mirrorも追加（中国からのアクセス等で有効）
-    local fastgit_url=$(echo "$url" | sed 's|raw\.githubusercontent\.com|raw.fastgit.org|')
-    urls+=("$fastgit_url")
-  elif [[ "$url" == *"github.com"* ]] && [[ "$url" == *"/raw/"* ]]; then
-    urls=("$url")
-    # fastgit mirror
-    local fastgit_url=$(echo "$url" | sed 's|github\.com|hub.fastgit.org|')
-    urls+=("$fastgit_url")
-  else
-    urls=("$url")
-  fi
-  
-  # 各URLとメソッドを試行
+  # ダウンロード実行（リトライ付き）
   local max_retries=3
   local retry_count=0
-  local total_attempts=0
-  local max_total_attempts=$((${#urls[@]} * max_retries))
   
-  for attempt_url in "${urls[@]}"; do
-    retry_count=0
-    while [ $retry_count -lt $max_retries ] && [ $total_attempts -lt $max_total_attempts ]; do
-      total_attempts=$((total_attempts + 1))
-      
-      debug "Attempt $total_attempts/$max_total_attempts: $attempt_url"
-      
-      # ダウンロード実行
-      if curl -fsSL --connect-timeout 30 --max-time 300 \
-           -H "User-Agent: Mozilla/5.0 (compatible; dotfiles-installer)" \
-           -H "Accept: text/plain, text/x-shellscript, application/octet-stream" \
-           "$attempt_url" -o "$output"; then
-        
-        # スクリプトファイルの場合は内容を検証
-        if [ "$validate_as_script" = "true" ]; then
-          if validateScript "$output" "$description"; then
-            success "$description downloaded and validated successfully"
-            return 0
-          else
-            warning "Downloaded file validation failed, trying next method..."
-            rm -f "$output" 2>/dev/null || true
-            retry_count=$((retry_count + 1))
-            continue
-          fi
-        else
-          success "$description downloaded successfully"
-          return 0
-        fi
-      else
-        retry_count=$((retry_count + 1))
-        if [ $retry_count -lt $max_retries ]; then
-          warning "Download failed. Retrying ($retry_count/$max_retries) with $attempt_url..."
-          sleep $((retry_count * 2))  # exponential backoff
-        else
-          warning "All retries failed for URL: $attempt_url"
-        fi
+  while [ $retry_count -lt $max_retries ]; do
+    if curl -fsSL --connect-timeout 30 --max-time 300 "$url" -o "$output"; then
+      success "$description downloaded successfully"
+      return 0
+    else
+      retry_count=$((retry_count + 1))
+      if [ $retry_count -lt $max_retries ]; then
+        warning "Download failed. Retrying ($retry_count/$max_retries)..."
+        sleep 2
       fi
-    done
+    fi
   done
   
-  error "Failed to download $description after $total_attempts attempts"
-  warning "Tried URLs:"
-  for tried_url in "${urls[@]}"; do
-    warning "  - $tried_url"
-  done
+  error "Failed to download $description after $max_retries attempts"
+  warning "Please check the URL: $url"
   return 1
 }
 
