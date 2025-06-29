@@ -185,10 +185,34 @@ installFontToWindows () {
   fi
 }
 
+# CI環境の検出
+isRunningOnCI () {
+  [ "${CI:-}" = "true" ] || [ "${GITHUB_ACTIONS:-}" = "true" ]
+}
+
+# dotfilesディレクトリのパスを取得
+getDotfilesDir () {
+  if isRunningOnCI; then
+    # CI環境では現在のディレクトリを使用
+    echo "$(pwd)"
+  elif [ -n "${DOTFILES_DIR:-}" ]; then
+    # 環境変数が設定されている場合
+    echo "$DOTFILES_DIR"
+  elif [ -d "${HOME}/dotfiles" ]; then
+    # 標準的な場所
+    echo "${HOME}/dotfiles"
+  else
+    # スクリプトの親ディレクトリを推測
+    echo "$(cd "$(dirname "$0")/.." && pwd)"
+  fi
+}
+
 # プラットフォーム情報をデバッグ出力
 debugPlatformInfo () {
   debug "Platform: $(getPlatformInfo)"
   debug "Architecture: $(uname -m)"
+  debug "CI Environment: $(isRunningOnCI && echo 'Yes' || echo 'No')"
+  debug "Dotfiles directory: $(getDotfilesDir)"
   debug "Homebrew path: $(getHomebrewPath 2>/dev/null || echo 'N/A')"
   debug "Homebrew installed: $(isHomebrewInstalled && echo 'Yes' || echo 'No')"
   if isRunningOnWSL; then

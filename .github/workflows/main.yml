@@ -18,6 +18,15 @@ jobs:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
 
+      - name: 環境情報を表示
+        run: |
+          echo "=== CI環境情報 ==="
+          echo "Working Directory: $(pwd)"
+          echo "Home Directory: $HOME"
+          echo "CI: $CI"
+          echo "GITHUB_ACTIONS: $GITHUB_ACTIONS"
+          ls -la
+
       - name: 基本テストを実行
         run: make test
 
@@ -44,11 +53,16 @@ jobs:
 
       - name: dotfilesセットアップ（init + link のみ）
         run: |
+          # ホームディレクトリにdotfilesディレクトリを作成
+          cp -r . $HOME/dotfiles
+          cd $HOME/dotfiles
           make init
           make link
 
       - name: 設定検証を実行
-        run: make verify
+        run: |
+          cd $HOME/dotfiles
+          make verify
         continue-on-error: true
 
   # macOS（ARM）でのテスト
@@ -74,11 +88,16 @@ jobs:
 
       - name: dotfilesセットアップ（init + link のみ）
         run: |
+          # ホームディレクトリにdotfilesディレクトリを作成
+          cp -r . $HOME/dotfiles
+          cd $HOME/dotfiles
           make init
           make link
 
       - name: 設定検証を実行
-        run: make verify
+        run: |
+          cd $HOME/dotfiles
+          make verify
         continue-on-error: true
 
   # Ubuntu（最新）でのテスト
@@ -104,11 +123,16 @@ jobs:
 
       - name: dotfilesセットアップ（init + link のみ）
         run: |
+          # ホームディレクトリにdotfilesディレクトリを作成
+          cp -r . $HOME/dotfiles
+          cd $HOME/dotfiles
           make init
           make link
 
       - name: 設定検証を実行
-        run: make verify
+        run: |
+          cd $HOME/dotfiles
+          make verify
         continue-on-error: true
 
   # Ubuntu 20.04でのテスト
@@ -132,11 +156,16 @@ jobs:
 
       - name: dotfilesセットアップ（init + link のみ）
         run: |
+          # ホームディレクトリにdotfilesディレクトリを作成
+          cp -r . $HOME/dotfiles
+          cd $HOME/dotfiles
           make init
           make link
 
       - name: 設定検証を実行
-        run: make verify
+        run: |
+          cd $HOME/dotfiles
+          make verify
         continue-on-error: true
 
   # Dockerでのテスト

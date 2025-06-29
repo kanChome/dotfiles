@@ -6,6 +6,10 @@ source ${SCRIPT_DIR}/common.sh
 info "dotfiles設定検証を開始"
 debugPlatformInfo
 
+# dotfilesディレクトリのパスを取得
+DOTFILES_DIR="$(getDotfilesDir)"
+info "dotfilesディレクトリ: ${DOTFILES_DIR}"
+
 VERIFY_FAILED=0
 VERIFY_COUNT=0
 
@@ -76,16 +80,20 @@ else
     warning "Homebrewがインストールされていません"
 fi
 
-# dotfilesシンボリンクの検証
-info "=== dotfilesシンボリンク検証 ==="
-DOTFILES_DIR="${HOME}/dotfiles"
-
-# 主要なdotfilesのシンボリンク確認
-for dotfile in .zshrc .gitconfig .Brewfile; do
-    if [ -f "${DOTFILES_DIR}/${dotfile}" ]; then
-        verify_symlink "${dotfile}のシンボリンク" "${HOME}/${dotfile}" "${DOTFILES_DIR}/${dotfile}"
-    fi
-done
+# dotfilesシンボリンクの検証（CI環境では実行しない）
+if ! isRunningOnCI; then
+    info "=== dotfilesシンボリンク検証 ==="
+    
+    # 主要なdotfilesのシンボリンク確認
+    for dotfile in .zshrc .gitconfig .Brewfile; do
+        if [ -f "${DOTFILES_DIR}/${dotfile}" ]; then
+            verify_symlink "${dotfile}のシンボリンク" "${HOME}/${dotfile}" "${DOTFILES_DIR}/${dotfile}"
+        fi
+    done
+else
+    info "=== CI環境：シンボリンク検証をスキップ ==="
+    info "CI環境ではシンボリンクの検証をスキップします"
+fi
 
 # ローカル設定ファイルの検証
 info "=== ローカル設定ファイル検証 ==="

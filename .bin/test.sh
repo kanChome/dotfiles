@@ -6,6 +6,10 @@ source ${SCRIPT_DIR}/common.sh
 info "dotfilesテストを開始"
 debugPlatformInfo
 
+# dotfilesディレクトリのパスを取得
+DOTFILES_DIR="$(getDotfilesDir)"
+info "dotfilesディレクトリ: ${DOTFILES_DIR}"
+
 TEST_FAILED=0
 TEST_COUNT=0
 
@@ -92,22 +96,22 @@ fi
 
 # dotfilesの基本構造テスト
 info "=== dotfiles構造テスト ==="
-test_file_exists "makefile" "${HOME}/dotfiles/makefile"
-test_file_exists "common.sh" "${HOME}/dotfiles/.bin/common.sh"
-test_file_exists "init.sh" "${HOME}/dotfiles/.bin/init.sh"
-test_file_exists "link.sh" "${HOME}/dotfiles/.bin/link.sh"
-test_file_exists ".zshrc" "${HOME}/dotfiles/.zshrc"
-test_file_exists ".gitconfig" "${HOME}/dotfiles/.gitconfig"
-test_file_exists ".Brewfile" "${HOME}/dotfiles/.Brewfile"
+test_file_exists "makefile" "${DOTFILES_DIR}/makefile"
+test_file_exists "common.sh" "${DOTFILES_DIR}/.bin/common.sh"
+test_file_exists "init.sh" "${DOTFILES_DIR}/.bin/init.sh"
+test_file_exists "link.sh" "${DOTFILES_DIR}/.bin/link.sh"
+test_file_exists ".zshrc" "${DOTFILES_DIR}/.zshrc"
+test_file_exists ".gitconfig" "${DOTFILES_DIR}/.gitconfig"
+test_file_exists ".Brewfile" "${DOTFILES_DIR}/.Brewfile"
 
 # テンプレートファイルのテスト
 info "=== テンプレートファイルテスト ==="
-test_file_exists ".zshrc.local.template" "${HOME}/dotfiles/.zshrc.local.template"
-test_file_exists ".gitconfig.local.template" "${HOME}/dotfiles/.gitconfig.local.template"
+test_file_exists ".zshrc.local.template" "${DOTFILES_DIR}/.zshrc.local.template"
+test_file_exists ".gitconfig.local.template" "${DOTFILES_DIR}/.gitconfig.local.template"
 
 # スクリプトの構文チェック
 info "=== スクリプト構文チェック ==="
-for script in "${HOME}/dotfiles/.bin"/*.sh; do
+for script in "${DOTFILES_DIR}/.bin"/*.sh; do
     if [ -f "$script" ]; then
         script_name=$(basename "$script")
         test_assert "${script_name}の構文チェック" "bash -n $script"
@@ -115,15 +119,21 @@ for script in "${HOME}/dotfiles/.bin"/*.sh; do
 done
 
 # Brewfileの構文チェック
-if [ -f "${HOME}/dotfiles/.Brewfile" ]; then
-    test_file_exists "Brewfile構文チェック" "${HOME}/dotfiles/.Brewfile"
+if [ -f "${DOTFILES_DIR}/.Brewfile" ]; then
+    test_file_exists "Brewfile構文チェック" "${DOTFILES_DIR}/.Brewfile"
 fi
 
-# 設定ファイルの基本チェック
+# 設定ファイルの基本チェック（CI環境では実際のファイル配置後のみ）
 info "=== 設定ファイル基本チェック ==="
-if [ -f "${HOME}/.zshrc" ]; then
-    # .zshrcはzsh固有の構文を含むためbash構文チェックは行わない
-    test_file_exists ".zshrc存在確認" "${HOME}/.zshrc"
+if ! isRunningOnCI; then
+    # ローカル環境でのみ実行（シンボリンクが作成されている前提）
+    if [ -f "${HOME}/.zshrc" ]; then
+        # .zshrcはzsh固有の構文を含むためbash構文チェックは行わない
+        test_file_exists ".zshrc存在確認" "${HOME}/.zshrc"
+    fi
+else
+    # CI環境では元ファイルの存在確認のみ
+    test_file_exists ".zshrc元ファイル確認" "${DOTFILES_DIR}/.zshrc"
 fi
 
 # 結果の出力
