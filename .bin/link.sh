@@ -3,7 +3,8 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source ${SCRIPT_DIR}/common.sh
 
-DOTFILES_DIR="$HOME/dotfiles"
+# dotfilesディレクトリを動的に取得
+DOTFILES_DIR="$(getDotfilesDir)"
 
 info "linking dotfiles"
 for dotfile in "${DOTFILES_DIR}"/.??* ; do
@@ -41,3 +42,21 @@ else
 fi
 
 success "local configuration setup complete"
+
+# .Brewfileのシンボリックリンク作成（brew bundle dump --global対応）
+info "setting up Homebrew bundle file"
+
+if [[ -f "$DOTFILES_DIR/.Brewfile" ]]; then
+    # 既存の~/.Brewfileをバックアップ（実ファイルの場合）
+    if [[ -f "$HOME/.Brewfile" ]] && [[ ! -L "$HOME/.Brewfile" ]]; then
+        warning "Backing up existing ~/.Brewfile to ~/.Brewfile.backup"
+        mv "$HOME/.Brewfile" "$HOME/.Brewfile.backup"
+    fi
+    
+    # シンボリックリンクを作成
+    ln -fnsv "$DOTFILES_DIR/.Brewfile" "$HOME/.Brewfile"
+    success "~/.Brewfile linked to dotfiles (brew bundle dump --global will work correctly)"
+else
+    warning ".Brewfile not found in dotfiles directory"
+    info "Run 'make packages' to generate .Brewfile"
+fi

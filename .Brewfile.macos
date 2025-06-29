@@ -1,0 +1,57 @@
+# macOS専用パッケージ（cask + mas）
+tap "homebrew/cask-fonts"
+tap "sanemat/font"
+
+# Emacs（macOS版）
+brew "emacs"
+
+# macOS GUI アプリケーション（cask）
+cask "alfred"
+cask "amazon-chime"
+cask "amazon-workspaces"
+cask "clipy"
+cask "cursor"
+cask "dbeaver-community"
+cask "deepl"
+cask "devtoys"
+cask "discord"
+cask "docker"
+cask "dropbox"
+cask "evernote"
+cask "gather"
+cask "google-chat"
+cask "google-chrome"
+cask "google-japanese-ime"
+cask "gyazo"
+cask "iterm2"
+cask "kindle"
+cask "microsoft-edge"
+cask "ngrok"
+cask "obsidian"
+cask "phpstorm"
+cask "postman"
+cask "shureplus-motiv"
+cask "slack"
+cask "spectacle"
+cask "spotify"
+cask "steam"
+cask "tableplus"
+cask "tunnelblick"
+cask "typora"
+cask "wireshark"
+cask "xmind"
+cask "zoom"
+
+# フォント（macOS専用）
+cask "font-hackgen"
+cask "font-hackgen-nerd"
+cask "font-meslo-for-powerline"
+cask "font-source-han-code-jp"
+
+# Mac App Store アプリ
+mas "GarageBand", id: 682658836
+mas "iMovie", id: 408981434
+mas "Just Focus", id: 1142151959
+mas "Keynote", id: 409183694
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541

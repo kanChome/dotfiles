@@ -85,11 +85,34 @@ if ! isRunningOnCI; then
     info "=== dotfilesシンボリンク検証 ==="
     
     # 主要なdotfilesのシンボリンク確認
-    for dotfile in .zshrc .gitconfig .Brewfile; do
+    for dotfile in .zshrc .gitconfig; do
         if [ -f "${DOTFILES_DIR}/${dotfile}" ]; then
             verify_symlink "${dotfile}のシンボリンク" "${HOME}/${dotfile}" "${DOTFILES_DIR}/${dotfile}"
         fi
     done
+    
+    # .Brewfileの特別検証（brew bundle dump --global 対応）
+    info "=== .Brewfile検証 ==="
+    if [ -f "${DOTFILES_DIR}/.Brewfile" ]; then
+        verify_symlink ".Brewfileのシンボリンク" "${HOME}/.Brewfile" "${DOTFILES_DIR}/.Brewfile"
+        
+        # 分離ファイルの存在確認
+        if [ -f "${DOTFILES_DIR}/.Brewfile.common" ]; then
+            success "✓ .Brewfile.common が存在します"
+        else
+            warning "⚠ .Brewfile.common が見つかりません"
+            VERIFY_FAILED=$((VERIFY_FAILED + 1))
+        fi
+        
+        if isRunningOnMac && [ -f "${DOTFILES_DIR}/.Brewfile.macos" ]; then
+            success "✓ .Brewfile.macos が存在します（macOS用）"
+        elif isRunningOnLinux && [ -f "${DOTFILES_DIR}/.packages.ubuntu" ]; then
+            success "✓ .packages.ubuntu が存在します（Ubuntu/Debian用）"
+        fi
+    else
+        warning "⚠ .Brewfileが見つかりません（make packages を実行してください）"
+        VERIFY_FAILED=$((VERIFY_FAILED + 1))
+    fi
 else
     info "=== CI環境：シンボリンク検証をスキップ ==="
     info "CI環境ではシンボリンクの検証をスキップします"

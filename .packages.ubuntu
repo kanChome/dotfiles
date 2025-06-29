@@ -1,0 +1,88 @@
+# Ubuntu/Debian専用パッケージ
+
+# APTパッケージ（GUI アプリケーション）
+apt_packages=(
+  # ブラウザ
+  "firefox"
+  "chromium-browser"
+  
+  # 開発ツール
+  "git"
+  "curl"
+  "wget"
+  "build-essential"
+  "software-properties-common"
+  "apt-transport-https"
+  "ca-certificates"
+  "gnupg"
+  "lsb-release"
+  
+  # エディタ・IDE
+  "vim"
+  "nano"
+  "emacs"
+  
+  # システムツール
+  "htop"
+  "tree"
+  "unzip"
+  "zip"
+  "fonts-powerline"
+  
+  # Docker関連
+  "docker.io"
+  "docker-compose"
+  
+  # フォント
+  "fonts-noto"
+  "fonts-firacode"
+)
+
+# Snapパッケージ（GUI アプリケーション）
+snap_packages=(
+  # 開発ツール
+  "code --classic"  # Visual Studio Code
+  "cursor --classic"  # Cursor AI IDE
+  "postman"
+  "dbeaver-ce"
+  
+  # コミュニケーション
+  "slack"
+  "discord"
+  "zoom-client"
+  
+  # メディア・エンターテイメント
+  "spotify"
+  "vlc"
+  
+  # クリエイティブ
+  "inkscape"
+  "gimp"
+  "blender --classic"
+  
+  # ユーティリティ
+  "obsidian --classic"
+  "typora"
+  
+  # その他
+  "steam"
+)
+
+# 外部リポジトリから個別インストール
+external_packages=(
+  # Google Chrome
+  "google-chrome"
+  
+  # Docker Desktop（必要に応じて）
+  "docker-desktop"
+  
+  # JetBrains Toolbox
+  "jetbrains-toolbox"
+)
+
+# 開発用フォント（手動ダウンロード）
+fonts_to_download=(
+  "HackGen"
+  "Meslo"
+  "Source Han Code JP"
+)
