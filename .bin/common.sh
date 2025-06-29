@@ -245,7 +245,7 @@ checkInternetConnection() {
   return 1
 }
 
-# 安全なダウンロード
+# ダウンロード
 safeDownload() {
   local url="$1"
   local output="$2"
@@ -307,34 +307,85 @@ checkSudoAccess() {
   fi
 }
 
+# パッケージが既にインストールされているかチェック
+isPackageInstalled() {
+  local package_manager="$1"
+  local package="$2"
+  local installed=0
+  local not_installed=1
+
+  case "$package_manager" in
+    apt|apt-get)
+      if dpkg -l "$package" 2>/dev/null | grep -q "^ii"; then
+        return $installed
+      else
+        return $not_installed
+      fi
+      ;;
+    dnf)
+      if dnf list installed "$package" 2>/dev/null | grep -q "^$package\."; then
+        return $installed
+      else
+        return $not_installed
+      fi
+      ;;
+    pacman)
+      if pacman -Q "$package" 2>/dev/null >/dev/null; then
+        return $installed
+      else
+        return $not_installed
+      fi
+      ;;
+    *)
+      error "Unknown package manager: $package_manager"
+      return 1
+      ;;
+  esac
+}
+
 # パッケージインストール（エラー耐性）
 safePackageInstall() {
   local package_manager="$1"
   shift
   local packages=("$@")
   local failed_packages=()
+  local skipped_packages=()
+  local installed_packages=()
   
   info "Installing packages with $package_manager"
   
   for package in "${packages[@]}"; do
+    # 既にインストールされているかチェック
+    if isPackageInstalled "$package_manager" "$package"; then
+      info "Package already installed, skipping: $package"
+      skipped_packages+=("$package")
+      continue
+    fi
+    
     info "Installing: $package"
     case "$package_manager" in
       apt|apt-get)
         if ! sudo apt-get install -y "$package" -qq 2>/dev/null; then
           warning "Failed to install: $package"
           failed_packages+=("$package")
+        else
+          installed_packages+=("$package")
         fi
         ;;
       dnf)
         if ! sudo dnf install -y "$package" -q 2>/dev/null; then
           warning "Failed to install: $package"
           failed_packages+=("$package")
+        else
+          installed_packages+=("$package")
         fi
         ;;
       pacman)
         if ! sudo pacman -S --noconfirm "$package" 2>/dev/null; then
           warning "Failed to install: $package"
           failed_packages+=("$package")
+        else
+          installed_packages+=("$package")
         fi
         ;;
       *)
@@ -344,13 +395,21 @@ safePackageInstall() {
     esac
   done
   
+  if [ ${#skipped_packages[@]} -gt 0 ]; then
+    info "Skipped packages (already installed): ${skipped_packages[*]}"
+  fi
+  
+  if [ ${#installed_packages[@]} -gt 0 ]; then
+    success "Successfully installed packages: ${installed_packages[*]}"
+  fi
+  
   if [ ${#failed_packages[@]} -gt 0 ]; then
     warning "Some packages failed to install: ${failed_packages[*]}"
     warning "You may need to install them manually later"
     info "Failed packages: ${failed_packages[*]}"
     return 1
   else
-    success "All packages installed successfully"
+    success "All packages processed successfully"
     return 0
   fi
 }
