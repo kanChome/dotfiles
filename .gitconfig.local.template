@@ -1,0 +1,21 @@
+# .gitconfig.local - 個人用Git設定
+# このファイルを ~/.gitconfig.local にコピーし、変更する
+# このファイルは .gitconfig から自動的にインクルードされます
+
+[user]
+	name = あなたの名前
+	email = あなたのメールアドレス@example.com
+
+# 個人用Gitエイリアス（オプション）
+[alias]
+	# lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+
+# 個人用Git設定（オプション）
+[push]
+	default = simple
+[pull]
+	rebase = true
+
+# 作業用設定（必要に応じてコメントを外してください）
+# [includeIf "gitdir:~/work/"]
+#	path = ~/.gitconfig.work

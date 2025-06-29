@@ -5,6 +5,5 @@
 	br = branch
 [core]
 	editor = vim
-[user]
-	name = kanChome
-	email = hellbird1998@gmail.com
+[include]
+	path = ~/.gitconfig.local
