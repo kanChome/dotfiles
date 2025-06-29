@@ -93,12 +93,17 @@ elif isRunningOnWSL; then
 	# 必須パッケージのインストール
 	info "Installing essential packages"
 	if checkSudoAccess; then
-		safePackageInstall "apt-get" "curl" "wget" "git" "build-essential"
+		safePackageInstall "apt-get" "curl" "wget" "git" "build-essential" "zsh"
 	else
 		warning "Cannot install packages without sudo access"
 		info "Please install manually: sudo apt-get install curl wget git build-essential"
 	fi
-	
+
+	if isPackageInstalled "apt-get" "zsh"; then
+		info "Switching shell to zsh..."
+		chsh -s $(which zsh)
+	fi
+
 	# PowerLevel10k フォントの処理
 	info "Installing PowerLevel10k font for WSL"
 	FONT_URL="https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
@@ -143,18 +148,22 @@ elif isRunningOnLinux; then
 	# ディストリビューション検出とパッケージインストール
 	DISTRO="$(getLinuxDistro)"
 	info "Detected Linux distribution: $DISTRO"
-	
+	local package_manager=""
+
 	if checkSudoAccess; then
 		case "$DISTRO" in
 			ubuntu|debian)
 				sudo apt-get update -qq || warning "Failed to update package list"
-				safePackageInstall "apt-get" "curl" "wget" "git" "build-essential"
+				safePackageInstall "apt-get" "curl" "wget" "git" "build-essential" "zsh"
+				$package_manager="dpkg"
 				;;
 			fedora|rhel|centos)
-				safePackageInstall "dnf" "curl" "wget" "git" "@development-tools"
+				safePackageInstall "dnf" "curl" "wget" "git" "@development-tools" "zsh"
+				$package_manager="dnf"
 				;;
 			arch)
-				safePackageInstall "pacman" "curl" "wget" "git" "base-devel"
+				safePackageInstall "pacman" "curl" "wget" "git" "base-devel" "zsh"
+				$package_manager="packman"
 				;;
 			*)
 				warning "Unknown distribution: $DISTRO"
@@ -168,6 +177,11 @@ elif isRunningOnLinux; then
 		info "Ubuntu/Debian: sudo apt-get install curl wget git build-essential"
 		info "Fedora/RHEL: sudo dnf install curl wget git @development-tools"
 		info "Arch: sudo pacman -S curl wget git base-devel"
+	fi
+
+	if isPackageInstalled "apt-get" "zsh"; then
+		info "Switching shell to zsh..."
+		chsh -s $(which zsh)
 	fi
 	
 	success "Linux environment setup complete"
