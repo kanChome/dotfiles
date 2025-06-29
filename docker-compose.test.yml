@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Ubuntu 22.04 でのテスト
+  ubuntu-22:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/home/testuser/dotfiles
+    command: make ci
+
+  # Ubuntu 20.04 でのテスト  
+  ubuntu-20:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      args:
+        - BASE_IMAGE=ubuntu:20.04
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/home/testuser/dotfiles
+    command: make ci
+
+  # テストの実行（対話モード）
+  test-interactive:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - DEBUG=1
+    volumes:
+      - .:/home/testuser/dotfiles
+    command: /bin/bash
+    stdin_open: true
+    tty: true
