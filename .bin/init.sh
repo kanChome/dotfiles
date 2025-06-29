@@ -31,9 +31,19 @@ if isRunningOnMac || isRunningOnWSL || isRunningOnLinux; then
 		fi
 		
 		# Homebrewインストールスクリプトの実行
-		if safeDownload "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" "/tmp/brew_install.sh" "Homebrew installer"; then
-			/bin/bash /tmp/brew_install.sh
-			rm -f /tmp/brew_install.sh
+		if safeDownload "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" "/tmp/brew_install.sh" "Homebrew installer" "true"; then
+			# スクリプトの最終検証（実行前）
+			if validateScript "/tmp/brew_install.sh" "Homebrew installer script"; then
+				info "Executing Homebrew installer script"
+				/bin/bash /tmp/brew_install.sh
+				rm -f /tmp/brew_install.sh
+			else
+				error "Homebrew installer script validation failed"
+				warning "The downloaded script does not appear to be valid"
+				warning "Please visit https://brew.sh for manual installation instructions"
+				rm -f /tmp/brew_install.sh
+				exit 1
+			fi
 		else
 			error "Failed to download Homebrew installer"
 			warning "Please visit https://brew.sh for manual installation instructions"
