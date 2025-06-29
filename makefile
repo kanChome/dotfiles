@@ -32,3 +32,21 @@ packages-sync:
 packages-diff:
 	@echo "Phase 2 で実装予定: 現在のインストール状況と分離ファイルの差分表示"
 	@echo "現在は brew bundle check --global を使用してください"
+
+# Windows専用コマンド
+winget-export:
+	@echo "Exporting current Windows packages to .packages.windows"
+	@if command -v winget >/dev/null 2>&1; then \
+		winget export -o .packages.windows --include-versions; \
+		echo "✓ Exported to .packages.windows"; \
+	else \
+		echo "✗ winget not available"; \
+	fi
+
+winget-import:
+	@echo "Importing Windows packages from .packages.windows"
+	@if command -v winget >/dev/null 2>&1; then \
+		winget import -i .packages.windows --accept-source-agreements --accept-package-agreements; \
+	else \
+		echo "✗ winget not available"; \
+	fi

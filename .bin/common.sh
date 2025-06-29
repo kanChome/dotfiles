@@ -35,6 +35,13 @@ isRunningOnLinux () {
   [ "$(uname)" = "Linux" ]
 }
 
+isRunningOnWindows () {
+  case "$(uname -s)" in
+    CYGWIN*|MINGW*|MSYS*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 # 詳細なプラットフォーム検出
 isRunningOnMacARM () {
   isRunningOnMac && [ "$(uname -m)" = "arm64" ]
@@ -88,6 +95,8 @@ getPlatformInfo () {
   elif isRunningOnLinux; then
     distro="$(getLinuxDistro)"
     platform="linux-${distro}"
+  elif isRunningOnWindows; then
+    platform="windows"
   else
     platform="unknown"
   fi

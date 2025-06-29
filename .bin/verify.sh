@@ -108,6 +108,8 @@ if ! isRunningOnCI; then
             success "✓ .Brewfile.macos が存在します（macOS用）"
         elif isRunningOnLinux && [ -f "${DOTFILES_DIR}/.packages.ubuntu" ]; then
             success "✓ .packages.ubuntu が存在します（Ubuntu/Debian用）"
+        elif isRunningOnWindows && [ -f "${DOTFILES_DIR}/.packages.windows" ]; then
+            success "✓ .packages.windows が存在します（Windows用）"
         fi
     else
         warning "⚠ .Brewfileが見つかりません（make packages を実行してください）"
@@ -170,6 +172,35 @@ elif isRunningOnLinux; then
     info "=== Linux固有検証 ==="
     DISTRO=$(getLinuxDistro)
     success "検出されたディストリビューション: ${DISTRO}"
+    
+elif isRunningOnWindows; then
+    info "=== Windows固有検証 ==="
+    
+    # Wingetの検証
+    if command -v winget >/dev/null 2>&1; then
+        success "✓ winget が利用可能です"
+        
+        # パッケージファイルの検証
+        if [ -f "${DOTFILES_DIR}/.packages.windows" ]; then
+            success "✓ .packages.windows が存在します"
+        else
+            warning "⚠ .packages.windows が見つかりません"
+            info "make winget-export を実行してパッケージリストを作成してください"
+            VERIFY_FAILED=$((VERIFY_FAILED + 1))
+        fi
+    else
+        warning "⚠ winget が利用できません"
+        info "Windows 10 version 1809 以降または Windows 11 が必要です"
+        VERIFY_FAILED=$((VERIFY_FAILED + 1))
+    fi
+    
+    # PowerShellの検証
+    if command -v pwsh >/dev/null 2>&1 || command -v powershell >/dev/null 2>&1; then
+        success "✓ PowerShell が利用可能です"
+    else
+        warning "⚠ PowerShell が見つかりません"
+        VERIFY_FAILED=$((VERIFY_FAILED + 1))
+    fi
 fi
 
 # zshプラグイン関連の検証

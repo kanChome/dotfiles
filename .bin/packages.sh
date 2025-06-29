@@ -134,13 +134,50 @@ install_vscode_extensions() {
   # 共通ファイルからVSCode拡張機能を抽出してインストール
   local common_file="$(getDotfilesDir)/.Brewfile.common"
   
-  grep '^vscode ' "$common_file" | while read -r line; do
-    local extension=$(echo "$line" | sed 's/vscode "\(.*\)"/\1/')
-    info "Installing VSCode extension: $extension"
-    code --install-extension "$extension" || warning "Failed to install extension: $extension"
-  done
+  if [ -f "$common_file" ]; then
+    grep '^vscode ' "$common_file" | while read -r line; do
+      local extension=$(echo "$line" | sed 's/vscode "\(.*\)"/\1/')
+      info "Installing VSCode extension: $extension"
+      code --install-extension "$extension" || warning "Failed to install extension: $extension"
+    done
+  else
+    warning "Common Brewfile not found, skipping VSCode extensions"
+  fi
   
   success "VSCode extensions installation completed"
+}
+
+# Windowsでのパッケージインストール
+install_windows_packages() {
+  info "Installing Windows packages"
+  
+  # パッケージリストを確認
+  local packages_file="$(getDotfilesDir)/.packages.windows"
+  
+  if [ ! -f "$packages_file" ]; then
+    error "Windows packages file not found: $packages_file"
+    return 1
+  fi
+  
+  # Wingetが利用可能かチェック
+  if ! command -v winget >/dev/null 2>&1; then
+    error "winget is not installed or not available"
+    warning "Please install winget or use Windows 10 version 1809 or later"
+    return 1
+  fi
+  
+  # パッケージソースを更新
+  info "Updating winget package sources"
+  winget source update
+  
+  # パッケージをインポート
+  info "Installing packages from .packages.windows"
+  winget import -i "$packages_file" --accept-source-agreements --accept-package-agreements || warning "Some packages may have failed to install"
+  
+  # VSCode拡張機能もインストール
+  install_vscode_extensions
+  
+  success "Windows packages installation completed"
 }
 
 # メイン処理
@@ -179,9 +216,15 @@ main() {
       success "Ubuntu/Debian packages installed successfully"
       ;;
       
+    windows)
+      # Windowsの場合
+      install_windows_packages
+      success "Windows packages installed successfully"
+      ;;
+      
     *)
       warning "Unsupported platform: $PLATFORM_INFO"
-      warning "Supported platforms: macOS, Ubuntu/Debian on WSL2 or native Linux"
+      warning "Supported platforms: macOS, Ubuntu/Debian on WSL2 or native Linux, Windows"
       
       # Homebrewが利用可能な場合は最低限のパッケージをインストール
       if isHomebrewInstalled; then
