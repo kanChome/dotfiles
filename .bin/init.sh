@@ -155,15 +155,15 @@ elif isRunningOnLinux; then
 			ubuntu|debian)
 				sudo apt-get update -qq || warning "Failed to update package list"
 				safePackageInstall "apt-get" "curl" "wget" "git" "build-essential" "zsh"
-				$package_manager="dpkg"
+				package_manager="dpkg"
 				;;
 			fedora|rhel|centos)
 				safePackageInstall "dnf" "curl" "wget" "git" "@development-tools" "zsh"
-				$package_manager="dnf"
+				package_manager="dnf"
 				;;
 			arch)
 				safePackageInstall "pacman" "curl" "wget" "git" "base-devel" "zsh"
-				$package_manager="packman"
+				package_manager="pacman"
 				;;
 			*)
 				warning "Unknown distribution: $DISTRO"
