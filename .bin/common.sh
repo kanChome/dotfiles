@@ -228,3 +228,197 @@ debugPlatformInfo () {
     debug "Windows fonts dir: $(getWindowsFontDir 2>/dev/null || echo 'N/A')"
   fi
 }
+
+# エラーハンドリング関数
+
+# インターネット接続確認
+checkInternetConnection() {
+  local test_urls=("https://www.google.com" "https://github.com" "https://raw.githubusercontent.com")
+  
+  for url in "${test_urls[@]}"; do
+    if curl -s --connect-timeout 10 --max-time 30 --head "$url" >/dev/null 2>&1; then
+      debug "Internet connection confirmed via $url"
+      return 0
+    fi
+  done
+  
+  return 1
+}
+
+# 安全なダウンロード
+safeDownload() {
+  local url="$1"
+  local output="$2"
+  local description="${3:-file}"
+  
+  info "Downloading $description"
+  debug "URL: $url"
+  debug "Output: $output"
+  
+  # インターネット接続確認
+  if ! checkInternetConnection; then
+    error "No internet connection available"
+    warning "Please check your network connection and try again"
+    warning "If you're behind a corporate firewall, you may need to configure proxy settings"
+    return 1
+  fi
+  
+  # ダウンロード実行（リトライ付き）
+  local max_retries=3
+  local retry_count=0
+  
+  while [ $retry_count -lt $max_retries ]; do
+    if curl -fsSL --connect-timeout 30 --max-time 300 "$url" -o "$output"; then
+      success "$description downloaded successfully"
+      return 0
+    else
+      retry_count=$((retry_count + 1))
+      if [ $retry_count -lt $max_retries ]; then
+        warning "Download failed. Retrying ($retry_count/$max_retries)..."
+        sleep 2
+      fi
+    fi
+  done
+  
+  error "Failed to download $description after $max_retries attempts"
+  warning "Please check the URL: $url"
+  return 1
+}
+
+# sudo権限チェック
+checkSudoAccess() {
+  if [ "${EUID:-$(id -u)}" -eq 0 ]; then
+    debug "Running as root"
+    return 0
+  fi
+  
+  if sudo -n true 2>/dev/null; then
+    debug "Sudo access available (passwordless)"
+    return 0
+  fi
+  
+  info "Checking sudo access"
+  if sudo -v 2>/dev/null; then
+    debug "Sudo access confirmed"
+    return 0
+  else
+    warning "Sudo access not available"
+    return 1
+  fi
+}
+
+# パッケージインストール（エラー耐性）
+safePackageInstall() {
+  local package_manager="$1"
+  shift
+  local packages=("$@")
+  local failed_packages=()
+  
+  info "Installing packages with $package_manager"
+  
+  for package in "${packages[@]}"; do
+    info "Installing: $package"
+    case "$package_manager" in
+      apt|apt-get)
+        if ! sudo apt-get install -y "$package" -qq 2>/dev/null; then
+          warning "Failed to install: $package"
+          failed_packages+=("$package")
+        fi
+        ;;
+      dnf)
+        if ! sudo dnf install -y "$package" -q 2>/dev/null; then
+          warning "Failed to install: $package"
+          failed_packages+=("$package")
+        fi
+        ;;
+      pacman)
+        if ! sudo pacman -S --noconfirm "$package" 2>/dev/null; then
+          warning "Failed to install: $package"
+          failed_packages+=("$package")
+        fi
+        ;;
+      *)
+        error "Unknown package manager: $package_manager"
+        return 1
+        ;;
+    esac
+  done
+  
+  if [ ${#failed_packages[@]} -gt 0 ]; then
+    warning "Some packages failed to install: ${failed_packages[*]}"
+    warning "You may need to install them manually later"
+    info "Failed packages: ${failed_packages[*]}"
+    return 1
+  else
+    success "All packages installed successfully"
+    return 0
+  fi
+}
+
+# Windows環境での PowerShell 確認
+checkPowerShell() {
+  if command -v pwsh >/dev/null 2>&1; then
+    success "PowerShell Core (pwsh) is available"
+    return 0
+  elif command -v powershell >/dev/null 2>&1; then
+    success "Windows PowerShell is available"
+    return 0
+  else
+    warning "PowerShell is not available"
+    info "Please install PowerShell Core from:"
+    info "https://github.com/PowerShell/PowerShell"
+    return 1
+  fi
+}
+
+# Windows環境での winget 確認
+checkWinget() {
+  if command -v winget >/dev/null 2>&1; then
+    local winget_version=$(winget --version 2>/dev/null || echo "unknown")
+    success "winget is available (version: $winget_version)"
+    return 0
+  else
+    warning "winget is not available"
+    info "Please install Windows Package Manager from:"
+    info "https://aka.ms/getwinget"
+    info "Or update to Windows 10 version 1809 or later / Windows 11"
+    return 1
+  fi
+}
+
+# Windows環境でのフォントインストール
+installWindowsFont() {
+  local font_url="$1"
+  local font_name="$2"
+  local description="${3:-$font_name}"
+  
+  info "Installing Windows font: $description"
+  
+  # ユーザーフォントディレクトリにダウンロード
+  local user_fonts_dir="$HOME/AppData/Local/Microsoft/Windows/Fonts"
+  local font_file="$user_fonts_dir/$font_name"
+  
+  # ディレクトリ作成
+  mkdir -p "$user_fonts_dir" 2>/dev/null || true
+  
+  # フォントダウンロード
+  if safeDownload "$font_url" "$font_file" "$description font"; then
+    success "Font downloaded to user directory: $font_file"
+    info "Please configure your terminal to use the font: $description"
+    return 0
+  else
+    # フォールバック: 一時ディレクトリにダウンロード
+    local temp_font="/tmp/$font_name"
+    if safeDownload "$font_url" "$temp_font" "$description font"; then
+      warning "Font downloaded to temporary location: $temp_font"
+      warning "Please install this font manually:"
+      warning "1. Double-click the font file to open it"
+      warning "2. Click 'Install' button"
+      warning "3. Configure your terminal to use the font"
+      return 0
+    else
+      error "Failed to download font: $description"
+      return 1
+    fi
+  fi
+}
