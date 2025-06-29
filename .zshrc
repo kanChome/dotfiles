@@ -5,13 +5,13 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# zinit install
+# zinit インストール
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 [ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
 [ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 source "${ZINIT_HOME}/zinit.zsh"
 
-### zinit config
+### zinit 設定
 zinit ice depth=1; zinit light romkatv/powerlevel10k
 
 # 入力補完
@@ -23,10 +23,21 @@ zinit light zdharma-continuum/fast-syntax-highlighting
 
 zinit snippet OMZP::git
 zinit snippet PZTM::helper
-### end zinit config
+### zinit 設定終了
 
-export PATH="/opt/homebrew/bin:$PATH"
-export PATH="/opt/homebrew/sbin:$PATH"
+# Homebrew設定 - 動的検出と設定
+if command -v brew >/dev/null 2>&1; then
+  # HomebrewがPATHに存在する場合、シェル環境の設定のみ実行
+  eval "$(brew shellenv)"
+else
+  # Homebrewを検索して初期化を試行
+  for brew_path in "/opt/homebrew" "/usr/local" "/home/linuxbrew/.linuxbrew"; do
+    if [ -x "${brew_path}/bin/brew" ]; then
+      eval "$(${brew_path}/bin/brew shellenv)"
+      break
+    fi
+  done
+fi
 
 # k8s
 autoload -Uz compinit && compinit
@@ -40,15 +51,8 @@ eval "$(anyenv init -)"
 # direnv
 eval "$(direnv hook bash)"
 
-function topri() {
-  git config --global user.name kanChome
-  git config --global user.email study.hellbird@gmail.com 
-}
-
-function towork() {
-  git config --global user.name ryo.hirano 
-  git config --global user.email ryo.hirano@monocrea.co.jp 
-}
+# 個人的なGit設定関数は .zshrc.local に移動しました
+# 個人設定用に .zshrc.local を作成してください
 setopt auto_cd
 function history-all { history -E 1 }
 
@@ -99,5 +103,8 @@ setopt append_history
 # 履歴をインクリメンタルに追加
 setopt inc_append_history
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# プロンプトをカスタマイズするには `p10k configure` を実行するか ~/.p10k.zsh を編集してください。
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# ローカルカスタマイズ設定を読み込み
+[[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
