@@ -422,3 +422,87 @@ installWindowsFont() {
     fi
   fi
 }
+
+# Homebrewインストール（直接実行方式）
+installHomebrew() {
+  info "Installing Homebrew"
+  
+  # 複数のURL（フォールバック対応）
+  local urls=(
+    "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+    "https://cdn.jsdelivr.net/gh/Homebrew/install@HEAD/install.sh"
+    "https://raw.fastgit.org/Homebrew/install/HEAD/install.sh"
+  )
+  
+  # インターネット接続確認
+  if ! checkInternetConnection; then
+    error "Cannot install Homebrew: No internet connection"
+    warning "Please check your network connection and try again"
+    return 1
+  fi
+  
+  local attempt=0
+  local max_attempts=${#urls[@]}
+  
+  for url in "${urls[@]}"; do
+    attempt=$((attempt + 1))
+    info "Homebrew install attempt $attempt/$max_attempts"
+    debug "Trying URL: $url"
+    
+    # 直接実行方式：curl の出力を直接 bash に渡す
+    if /bin/bash -c "$(curl -fsSL --connect-timeout 30 --max-time 300 --retry 2 \
+                      -H 'User-Agent: dotfiles-installer/1.0' \
+                      -H 'Accept: text/plain, application/x-sh' \
+                      \"$url\")"; then
+      success "Homebrew installed successfully from: $url"
+      
+      # インストール確認
+      local homebrew_path
+      homebrew_path="$(getHomebrewPath)"
+      if [ -n "$homebrew_path" ] && [ -x "$homebrew_path/bin/brew" ]; then
+        success "Homebrew binary confirmed at: $homebrew_path/bin/brew"
+        return 0
+      else
+        warning "Homebrew installed but binary not found at expected location"
+        # PATH確認のために一度sourceしてみる
+        if command -v brew >/dev/null 2>&1; then
+          success "Homebrew is available in PATH"
+          return 0
+        else
+          warning "Homebrew binary not found in PATH either"
+        fi
+      fi
+    else
+      local exit_code=$?
+      warning "Homebrew install failed from URL: $url (exit code: $exit_code)"
+      
+      # 最後の試行でない場合は継続
+      if [ $attempt -lt $max_attempts ]; then
+        info "Trying next URL..."
+        sleep 3
+      fi
+    fi
+  done
+  
+  # 全てのURLで失敗
+  error "Failed to install Homebrew from all available sources"
+  warning "URLs tried:"
+  for url in "${urls[@]}"; do
+    warning "  - $url"
+  done
+  warning ""
+  warning "Manual installation instructions:"
+  warning "1. Visit https://brew.sh"
+  warning "2. Copy and run the installation command"
+  warning "3. Follow the on-screen instructions"
+  
+  if isRunningOnCI; then
+    warning ""
+    warning "CI Environment troubleshooting:"
+    warning "- Check if GitHub/CDN access is blocked"
+    warning "- Verify network connectivity in CI environment"
+    warning "- Consider using a different base image or runner"
+  fi
+  
+  return 1
+}

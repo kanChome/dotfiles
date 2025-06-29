@@ -23,19 +23,9 @@ if isRunningOnMac || isRunningOnWSL || isRunningOnLinux; then
 	if ! isHomebrewInstalled; then
 		info "Installing Homebrew"
 		
-		# インターネット接続確認
-		if ! checkInternetConnection; then
-			error "Cannot install Homebrew: No internet connection"
-			warning "Please connect to the internet and try again"
-			exit 1
-		fi
-		
-		# Homebrewインストールスクリプトの実行
-		if safeDownload "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" "/tmp/brew_install.sh" "Homebrew installer"; then
-			/bin/bash /tmp/brew_install.sh
-			rm -f /tmp/brew_install.sh
-		else
-			error "Failed to download Homebrew installer"
+		# Homebrew インストール（直接実行方式）
+		if ! installHomebrew; then
+			error "Failed to install Homebrew"
 			warning "Please visit https://brew.sh for manual installation instructions"
 			exit 1
 		fi
