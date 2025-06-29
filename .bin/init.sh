@@ -148,7 +148,7 @@ elif isRunningOnLinux; then
 	# ディストリビューション検出とパッケージインストール
 	DISTRO="$(getLinuxDistro)"
 	info "Detected Linux distribution: $DISTRO"
-	local package_manager=""
+	package_manager=""
 
 	if checkSudoAccess; then
 		case "$DISTRO" in
