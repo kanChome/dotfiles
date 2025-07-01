@@ -1,0 +1,48 @@
+# .zshrc.local - 個人設定カスタマイズ
+# このファイルを ~/.zshrc.local にコピーし、必要に応じて修正してください
+# このファイルが存在する場合、.zshrcから自動的に読み込まれます
+
+# 個人用Git設定関数
+# コメントを外し、あなたの情報に変更してください
+function topri() {
+  git config --global user.name "あなたの個人名"
+  git config --global user.email "あなたの個人メールアドレス"
+}
+
+function towork() {
+  git config --global user.name "あなたの会社名" 
+  git config --global user.email "あなたの会社メールアドレス"
+}
+
+# 個人用エイリアス
+# alias ll='ls -la'
+# alias grep='grep --color=auto'
+
+# 個人用環境変数
+# export EDITOR=vim
+# export BROWSER=google-chrome
+
+# 個人用関数
+# function myfunction() {
+#   echo "これは個人用関数です"
+# }
+
+# プラットフォーム固有の設定
+case "$(uname)" in
+  Darwin)
+    # macOS固有設定
+    # export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+    ;;
+  Linux)
+    # Linux固有設定
+    if grep -q microsoft /proc/version 2>/dev/null; then
+      # WSL固有設定
+      # export DISPLAY=:0.0
+    fi
+    ;;
+esac
+
+# 作業/プロジェクト固有の設定
+# if [[ -n $WORK_ENV ]]; then
+#   # 作業環境固有の設定
+# fi
