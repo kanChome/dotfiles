@@ -54,4 +54,12 @@ mas "iMovie", id: 408981434
 mas "Just Focus", id: 1142151959
 mas "Keynote", id: 409183694
 mas "Numbers", id: 409203825
+mas "Pages", id: 409201541cask "anki"
+cask "claude"
+cask "docker-desktop"
+cask "hiddenbar"
+cask "wireshark-app"
+mas "JustFocus", id: 1142151959
+mas "Kindle", id: 302584613
 mas "Pages", id: 409201541
+cask "anki"
