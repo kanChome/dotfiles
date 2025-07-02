@@ -100,8 +100,12 @@ elif isRunningOnWSL; then
 	fi
 
 	if isPackageInstalled "apt-get" "zsh"; then
-		info "Switching shell to zsh..."
-		chsh -s $(which zsh)
+		if isRunningOnCI; then
+			info "CI environment detected - skipping shell change to zsh"
+		else
+			info "Switching shell to zsh..."
+			chsh -s $(which zsh)
+		fi
 	fi
 
 	# PowerLevel10k フォントの処理
@@ -180,8 +184,12 @@ elif isRunningOnLinux; then
 	fi
 
 	if isPackageInstalled "apt-get" "zsh"; then
-		info "Switching shell to zsh..."
-		chsh -s $(which zsh)
+		if isRunningOnCI; then
+			info "CI environment detected - skipping shell change to zsh"
+		else
+			info "Switching shell to zsh..."
+			chsh -s $(which zsh)
+		fi
 	fi
 	
 	success "Linux environment setup complete"
