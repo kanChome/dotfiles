@@ -65,6 +65,12 @@ jobs:
           make verify
         continue-on-error: true
 
+      - name: anyenv セットアップテスト
+        run: |
+          cd $HOME/dotfiles
+          .bin/anyenv.sh test
+        continue-on-error: true
+
   # Linux テスト
   linux-test:
     name: Linux テスト
@@ -98,5 +104,11 @@ jobs:
         run: |
           cd $HOME/dotfiles
           make verify
+        continue-on-error: true
+
+      - name: anyenv セットアップテスト
+        run: |
+          cd $HOME/dotfiles
+          .bin/anyenv.sh test
         continue-on-error: true
 
