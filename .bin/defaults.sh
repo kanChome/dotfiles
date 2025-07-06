@@ -3,7 +3,12 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source ${SCRIPT_DIR}/common.sh
 
-isRunningOnMac || exit 1
+if isRunningOnMac; then
+  info "Edit defaults"
+else
+  info "Skip defaults"
+  return 0
+fi
 
 info "Edit defaults"
 ## Dockを自動的に非表示
