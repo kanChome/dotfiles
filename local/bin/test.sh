@@ -102,7 +102,7 @@ test_file_exists "init.sh" "${DOTFILES_DIR}/local/bin/init.sh"
 test_file_exists "link.sh" "${DOTFILES_DIR}/local/bin/link.sh"
 test_file_exists "zshrc" "${DOTFILES_DIR}/config/zsh/zshrc"
 test_file_exists "git config" "${DOTFILES_DIR}/config/git/config"
-test_file_exists "Brewfile" "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/Brewfile"
+test_file_exists ".Brewfile" "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/.Brewfile"
 
 # テンプレートファイルのテスト
 info "=== テンプレートファイルテスト ==="
@@ -117,11 +117,6 @@ for script in "${DOTFILES_DIR}/local/bin"/*.sh; do
         test_assert "${script_name}の構文チェック" "bash -n $script"
     fi
 done
-
-# Brewfileの構文チェック
-if [ -f "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/Brewfile" ]; then
-    test_file_exists "Brewfile構文チェック" "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/Brewfile"
-fi
 
 # 設定ファイルの基本チェック（CI環境では実際のファイル配置後のみ）
 info "=== 設定ファイル基本チェック ==="
