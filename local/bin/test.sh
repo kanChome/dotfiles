@@ -97,21 +97,21 @@ fi
 # dotfilesの基本構造テスト
 info "=== dotfiles構造テスト ==="
 test_file_exists "makefile" "${DOTFILES_DIR}/makefile"
-test_file_exists "common.sh" "${DOTFILES_DIR}/.bin/common.sh"
-test_file_exists "init.sh" "${DOTFILES_DIR}/.bin/init.sh"
-test_file_exists "link.sh" "${DOTFILES_DIR}/.bin/link.sh"
-test_file_exists ".zshrc" "${DOTFILES_DIR}/.zshrc"
-test_file_exists ".gitconfig" "${DOTFILES_DIR}/.gitconfig"
-test_file_exists ".Brewfile" "${DOTFILES_DIR}/.Brewfile"
+test_file_exists "common.sh" "${DOTFILES_DIR}/local/bin/common.sh"
+test_file_exists "init.sh" "${DOTFILES_DIR}/local/bin/init.sh"
+test_file_exists "link.sh" "${DOTFILES_DIR}/local/bin/link.sh"
+test_file_exists "zshrc" "${DOTFILES_DIR}/config/zsh/zshrc"
+test_file_exists "git config" "${DOTFILES_DIR}/config/git/config"
+test_file_exists "Brewfile" "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/Brewfile"
 
 # テンプレートファイルのテスト
 info "=== テンプレートファイルテスト ==="
-test_file_exists ".zshrc.local.template" "${DOTFILES_DIR}/.zshrc.local.template"
-test_file_exists ".gitconfig.local.template" "${DOTFILES_DIR}/.gitconfig.local.template"
+test_file_exists "zshrc.local.template" "${DOTFILES_DIR}/config/zsh/zshrc.local.template"
+test_file_exists "git config.local.template" "${DOTFILES_DIR}/config/git/config.local.template"
 
 # スクリプトの構文チェック
 info "=== スクリプト構文チェック ==="
-for script in "${DOTFILES_DIR}/.bin"/*.sh; do
+for script in "${DOTFILES_DIR}/local/bin"/*.sh; do
     if [ -f "$script" ]; then
         script_name=$(basename "$script")
         test_assert "${script_name}の構文チェック" "bash -n $script"
@@ -119,8 +119,8 @@ for script in "${DOTFILES_DIR}/.bin"/*.sh; do
 done
 
 # Brewfileの構文チェック
-if [ -f "${DOTFILES_DIR}/.Brewfile" ]; then
-    test_file_exists "Brewfile構文チェック" "${DOTFILES_DIR}/.Brewfile"
+if [ -f "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/Brewfile" ]; then
+    test_file_exists "Brewfile構文チェック" "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/Brewfile"
 fi
 
 # 設定ファイルの基本チェック（CI環境では実際のファイル配置後のみ）
@@ -133,7 +133,7 @@ if ! isRunningOnCI; then
     fi
 else
     # CI環境では元ファイルの存在確認のみ
-    test_file_exists ".zshrc元ファイル確認" "${DOTFILES_DIR}/.zshrc"
+    test_file_exists ".zshrc元ファイル確認" "${DOTFILES_DIR}/config/zsh/zshrc"
 fi
 
 # 結果の出力

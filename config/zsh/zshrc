@@ -1,8 +1,14 @@
+# XDG Base Directory Specification
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+if [[ -r "${XDG_CACHE_HOME}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
 # zinit インストール
@@ -62,7 +68,8 @@ bindkey '^R' history-incremental-search-backward
 bindkey '^S' history-incremental-search-forward
 export HISTTIMEFORMAT="%F %T "
 
-HISTFILE=~/.zsh_history
+HISTFILE="${XDG_STATE_HOME}/zsh/history"
+mkdir -p "${XDG_STATE_HOME}/zsh"
 
 # ヒストリに保存するコマンド数
 HISTSIZE=10000
@@ -106,5 +113,7 @@ setopt inc_append_history
 # プロンプトをカスタマイズするには `p10k configure` を実行するか ~/.p10k.zsh を編集してください。
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# ローカルカスタマイズ設定を読み込み
+# ローカルカスタマイズ設定を読み込み（XDG対応）
+[[ ! -f "${XDG_CONFIG_HOME}/zsh/zshrc.local" ]] || source "${XDG_CONFIG_HOME}/zsh/zshrc.local"
+# 後方互換性のため従来の場所もチェック
 [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local

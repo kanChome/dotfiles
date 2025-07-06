@@ -9,9 +9,9 @@ debug "Platform detected: $PLATFORM_INFO"
 
 # Brewfileを動的に生成する関数
 generate_brewfile() {
-  local brewfile_path="$(getDotfilesDir)/.Brewfile"
-  local common_file="$(getDotfilesDir)/.Brewfile.common"
-  local macos_file="$(getDotfilesDir)/.Brewfile.macos"
+  local brewfile_path="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile"
+  local common_file="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile.common"
+  local macos_file="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile.macos"
   
   info "Generating Brewfile for current platform"
   
@@ -58,7 +58,7 @@ install_ubuntu_packages() {
   info "Installing Ubuntu/Debian packages"
   
   # パッケージリストを読み込み
-  local packages_file="$(getDotfilesDir)/.packages.ubuntu"
+  local packages_file="$(getDotfilesDir)/local/share/dotfiles/packages/ubuntu"
   
   if [ ! -f "$packages_file" ]; then
     error "Ubuntu packages file not found: $packages_file"
@@ -132,7 +132,7 @@ install_vscode_extensions() {
   info "Installing VSCode extensions"
   
   # 共通ファイルからVSCode拡張機能を抽出してインストール
-  local common_file="$(getDotfilesDir)/.Brewfile.common"
+  local common_file="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile.common"
   
   if [ -f "$common_file" ]; then
     grep '^vscode ' "$common_file" | while read -r line; do
@@ -152,7 +152,7 @@ install_windows_packages() {
   info "Installing Windows packages"
   
   # パッケージリストを確認
-  local packages_file="$(getDotfilesDir)/.packages.windows"
+  local packages_file="$(getDotfilesDir)/local/share/dotfiles/packages/windows"
   
   if [ ! -f "$packages_file" ]; then
     error "Windows packages file not found: $packages_file"

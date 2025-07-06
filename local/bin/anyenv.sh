@@ -3,16 +3,11 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source ${SCRIPT_DIR}/common.sh
 
-# anyenv安全インストールスクリプト
-# 既存の環境を破壊せず、エラーハンドリングを含む安全な実装
-
 info "Setting up anyenv environment"
 debugPlatformInfo
 
-# anyenvのインストールディレクトリ
 ANYENV_ROOT="${HOME}/.anyenv"
 
-# anyenvが既にインストールされているかチェック
 check_anyenv_installed() {
     if [ -d "$ANYENV_ROOT" ] && [ -x "$ANYENV_ROOT/bin/anyenv" ]; then
         return 0
@@ -20,7 +15,6 @@ check_anyenv_installed() {
     return 1
 }
 
-# anyenvのインストール
 install_anyenv() {
     info "Installing anyenv"
     
@@ -29,7 +23,6 @@ install_anyenv() {
         return 0
     fi
     
-    # インターネット接続確認
     if ! checkInternetConnection; then
         error "Cannot install anyenv: No internet connection"
         return 1
@@ -75,7 +68,6 @@ install_anyenv() {
         fi
     fi
     
-    # anyenv-updateプラグインのインストール
     local plugins_dir="$ANYENV_ROOT/plugins"
     mkdir -p "$plugins_dir"
     
@@ -92,7 +84,6 @@ install_anyenv() {
     return 0
 }
 
-# シェル設定の更新
 setup_shell_integration() {
     info "Setting up shell integration"
     
@@ -131,20 +122,17 @@ setup_shell_integration() {
     return 0
 }
 
-# 言語環境のインストール（安全な実装）
 install_language_env() {
     local env_name="$1"
     local version="$2"
     
     info "Setting up $env_name environment"
     
-    # CI環境では言語のインストールをスキップ（時間短縮とリソース節約）
     if isRunningOnCI; then
         info "Skipping $env_name installation in CI environment"
         return 0
     fi
     
-    # anyenvが利用可能かチェック
     if ! command -v anyenv >/dev/null 2>&1; then
         # PATHを一時的に設定
         export PATH="$ANYENV_ROOT/bin:$PATH"
@@ -155,7 +143,6 @@ install_language_env() {
         fi
     fi
     
-    # env (jenv, nodenv, etc.) が既にインストールされているかチェック
     if anyenv versions "$env_name" >/dev/null 2>&1; then
         success "$env_name is already installed"
     else
@@ -168,7 +155,6 @@ install_language_env() {
         fi
     fi
     
-    # シェル環境の再読み込み（execを使わない安全な方法）
     eval "$(anyenv init -)"
     
     # 指定バージョンがインストール済みかチェック
@@ -198,38 +184,31 @@ install_language_env() {
 }
 
 # 最新の推奨バージョンを取得する関数
-get_latest_versions() {
-    # 2024年現在の安定版バージョン（定期的に更新が必要）
-    JAVA_VERSION="21.0.2"      # Java LTS
-    NODE_VERSION="20.11.1"     # Node.js LTS
-    GO_VERSION="1.22.1"        # Go最新安定版
+get_versions() {
+    JAVA_VERSION="21.0.2"
+    NODE_VERSION="20.11.1"
+    GO_VERSION="1.22.1"
     
     debug "Using versions: Java $JAVA_VERSION, Node $NODE_VERSION, Go $GO_VERSION"
 }
 
-# CI専用のテストモード
 test_mode() {
     info "Running anyenv setup in test mode"
     
-    # 最新バージョン情報の取得
-    get_latest_versions
+    get_versions
     
-    # anyenvのインストール
     if ! install_anyenv; then
         error "anyenv installation failed"
         exit 1
     fi
     
-    # シェル統合の設定
     if ! setup_shell_integration; then
         error "Shell integration setup failed"
         exit 1
     fi
     
-    # CI環境では言語インストールをスキップし、基本的な動作確認のみ
     info "Verifying anyenv functionality (test mode)"
     
-    # anyenvが正常に動作するかテスト
     export PATH="$ANYENV_ROOT/bin:$PATH"
     if command -v anyenv >/dev/null 2>&1; then
         success "anyenv is properly installed and available"
@@ -245,48 +224,38 @@ test_mode() {
     fi
 }
 
-# メイン実行フロー
 main() {
-    # テストモードかチェック
     if [ "${1:-}" = "test" ] || isRunningOnCI; then
         test_mode
         return 0
     fi
     
-    # 最新バージョン情報の取得
-    get_latest_versions
+    get_versions
     
-    # anyenvのインストール
     if ! install_anyenv; then
         error "anyenv installation failed"
         exit 1
     fi
     
-    # シェル統合の設定
     if ! setup_shell_integration; then
         error "Shell integration setup failed"
         exit 1
     fi
     
-    # 言語環境のインストール（オプション）
     info "Installing language environments..."
     
-    # Java環境（jenv）
     if ! install_language_env "jenv" "$JAVA_VERSION"; then
         warning "Java environment setup failed (non-critical)"
     fi
     
-    # Node.js環境（nodenv）
     if ! install_language_env "nodenv" "$NODE_VERSION"; then
         warning "Node.js environment setup failed (non-critical)"
     fi
     
-    # Go環境（goenv）
     if ! install_language_env "goenv" "$GO_VERSION"; then
         warning "Go environment setup failed (non-critical)"
     fi
     
-    # 完了メッセージ
     success "anyenv setup completed successfully"
     info "Please restart your shell or run: source ~/.zshrc"
     info "Available commands:"
@@ -296,8 +265,6 @@ main() {
     info "  <env> global <version>  # Set global version"
 }
 
-# エラートラップの設定
 trap 'error "anyenv setup failed at line $LINENO"' ERR
 
-# メイン実行
 main "$@"

@@ -6,4 +6,6 @@
 [core]
 	editor = vim
 [include]
+	path = ~/.config/git/config.local
+	# Fallback for backward compatibility
 	path = ~/.gitconfig.local
