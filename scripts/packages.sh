@@ -9,9 +9,9 @@ debug "Platform detected: $PLATFORM_INFO"
 
 # Brewfileを動的に生成する関数
 generate_brewfile() {
-  local brewfile_path="$(getDotfilesDir)/.Brewfile"
-  local common_file="$(getDotfilesDir)/.Brewfile.common"
-  local macos_file="$(getDotfilesDir)/.Brewfile.macos"
+  local brewfile_path="$(getDotfilesDir)/packages/.Brewfile"
+  local common_file="$(getDotfilesDir)/packages/.Brewfile.common"
+  local macos_file="$(getDotfilesDir)/packages/.Brewfile.macos"
   
   info "Generating Brewfile for current platform"
   
@@ -58,7 +58,7 @@ install_ubuntu_packages() {
   info "Installing Ubuntu/Debian packages"
   
   # パッケージリストを読み込み
-  local packages_file="$(getDotfilesDir)/.packages.ubuntu"
+  local packages_file="$(getDotfilesDir)/packages/.packages.ubuntu"
   
   if [ ! -f "$packages_file" ]; then
     error "Ubuntu packages file not found: $packages_file"
@@ -152,7 +152,7 @@ install_windows_packages() {
   info "Installing Windows packages"
   
   # パッケージリストを確認
-  local packages_file="$(getDotfilesDir)/.packages.windows"
+  local packages_file="$(getDotfilesDir)/packages/.packages.windows"
   
   if [ ! -f "$packages_file" ]; then
     error "Windows packages file not found: $packages_file"
@@ -171,7 +171,7 @@ install_windows_packages() {
   winget source update
   
   # パッケージをインポート
-  info "Installing packages from .packages.windows"
+  info "Installing packages from packages/.packages.windows"
   winget import -i "$packages_file" --accept-source-agreements --accept-package-agreements || warning "Some packages may have failed to install"
   
   # VSCode拡張機能もインストール

@@ -24,8 +24,8 @@ success "dotfiles linked"
 info "setting up local configuration files"
 
 # .zshrc.localのセットアップ
-if [[ ! -f "$HOME/.zshrc.local" ]] && [[ -f "$DOTFILES_DIR/.zshrc.local.template" ]]; then
-    cp "$DOTFILES_DIR/.zshrc.local.template" "$HOME/.zshrc.local"
+if [[ ! -f "$HOME/.zshrc.local" ]] && [[ -f "$DOTFILES_DIR/config/zsh/.zshrc.local.template" ]]; then
+    cp "$DOTFILES_DIR/config/zsh/.zshrc.local.template" "$HOME/.zshrc.local"
     info "Created ~/.zshrc.local from template"
     warning "Please edit ~/.zshrc.local to customize your personal settings"
 else
@@ -33,8 +33,8 @@ else
 fi
 
 # .gitconfig.localのセットアップ
-if [[ ! -f "$HOME/.gitconfig.local" ]] && [[ -f "$DOTFILES_DIR/.gitconfig.local.template" ]]; then
-    cp "$DOTFILES_DIR/.gitconfig.local.template" "$HOME/.gitconfig.local"
+if [[ ! -f "$HOME/.gitconfig.local" ]] && [[ -f "$DOTFILES_DIR/config/git/config.local.template" ]]; then
+    cp "$DOTFILES_DIR/config/git/config.local.template" "$HOME/.gitconfig.local"
     info "Created ~/.gitconfig.local from template"
     warning "Please edit ~/.gitconfig.local with your Git user information"
 else
@@ -46,7 +46,7 @@ success "local configuration setup complete"
 # .Brewfileのシンボリックリンク作成（brew bundle dump --global対応）
 info "setting up Homebrew bundle file"
 
-if [[ -f "$DOTFILES_DIR/.Brewfile" ]]; then
+if [[ -f "$DOTFILES_DIR/packages/.Brewfile" ]]; then
     # 既存の~/.Brewfileをバックアップ（実ファイルの場合）
     if [[ -f "$HOME/.Brewfile" ]] && [[ ! -L "$HOME/.Brewfile" ]]; then
         warning "Backing up existing ~/.Brewfile to ~/.Brewfile.backup"
@@ -54,9 +54,38 @@ if [[ -f "$DOTFILES_DIR/.Brewfile" ]]; then
     fi
     
     # シンボリックリンクを作成
-    ln -fnsv "$DOTFILES_DIR/.Brewfile" "$HOME/.Brewfile"
+    ln -fnsv "$DOTFILES_DIR/packages/.Brewfile" "$HOME/.Brewfile"
     success "~/.Brewfile linked to dotfiles (brew bundle dump --global will work correctly)"
 else
-    warning ".Brewfile not found in dotfiles directory"
-    info "Run 'make packages' to generate .Brewfile"
+    warning "packages/.Brewfile not found in dotfiles directory"
+    info "Run 'make packages' to generate packages/.Brewfile"
 fi
+
+# XDG準拠の設定ファイルリンク作成
+info "setting up XDG-compliant configuration files"
+
+# ~/.config ディレクトリの作成
+mkdir -p "$HOME/.config"
+
+# Git設定のXDG準拠リンク
+if [[ -f "$DOTFILES_DIR/config/git/config" ]]; then
+    mkdir -p "$HOME/.config/git"
+    ln -fnsv "$DOTFILES_DIR/config/git/config" "$HOME/.config/git/config"
+    success "Git config linked to XDG location"
+fi
+
+# Zsh設定のXDG準拠リンク
+if [[ -f "$DOTFILES_DIR/config/zsh/.zshrc" ]]; then
+    mkdir -p "$HOME/.config/zsh"
+    ln -fnsv "$DOTFILES_DIR/config/zsh/.zshrc" "$HOME/.config/zsh/.zshrc"
+    success "Zsh config linked to XDG location"
+fi
+
+# レガシーファイルの後方互換性リンク
+info "setting up legacy configuration files for backward compatibility"
+for legacy_file in "$DOTFILES_DIR/legacy"/.??* ; do
+    [[ ! -f "$legacy_file" ]] && continue
+    ln -fnsv "$legacy_file" "$HOME"
+done
+
+success "XDG-compliant and legacy configuration setup complete"

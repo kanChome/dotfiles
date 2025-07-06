@@ -97,21 +97,21 @@ fi
 # dotfilesの基本構造テスト
 info "=== dotfiles構造テスト ==="
 test_file_exists "makefile" "${DOTFILES_DIR}/makefile"
-test_file_exists "common.sh" "${DOTFILES_DIR}/.bin/common.sh"
-test_file_exists "init.sh" "${DOTFILES_DIR}/.bin/init.sh"
-test_file_exists "link.sh" "${DOTFILES_DIR}/.bin/link.sh"
-test_file_exists ".zshrc" "${DOTFILES_DIR}/.zshrc"
-test_file_exists ".gitconfig" "${DOTFILES_DIR}/.gitconfig"
-test_file_exists ".Brewfile" "${DOTFILES_DIR}/.Brewfile"
+test_file_exists "common.sh" "${DOTFILES_DIR}/scripts/common.sh"
+test_file_exists "init.sh" "${DOTFILES_DIR}/scripts/init.sh"
+test_file_exists "link.sh" "${DOTFILES_DIR}/scripts/link.sh"
+test_file_exists ".zshrc" "${DOTFILES_DIR}/config/zsh/.zshrc"
+test_file_exists ".gitconfig" "${DOTFILES_DIR}/config/git/config"
+test_file_exists ".Brewfile" "${DOTFILES_DIR}/packages/.Brewfile"
 
 # テンプレートファイルのテスト
 info "=== テンプレートファイルテスト ==="
-test_file_exists ".zshrc.local.template" "${DOTFILES_DIR}/.zshrc.local.template"
-test_file_exists ".gitconfig.local.template" "${DOTFILES_DIR}/.gitconfig.local.template"
+test_file_exists ".zshrc.local.template" "${DOTFILES_DIR}/config/zsh/.zshrc.local.template"
+test_file_exists ".gitconfig.local.template" "${DOTFILES_DIR}/config/git/config.local.template"
 
 # スクリプトの構文チェック
 info "=== スクリプト構文チェック ==="
-for script in "${DOTFILES_DIR}/.bin"/*.sh; do
+for script in "${DOTFILES_DIR}/scripts"/*.sh; do
     if [ -f "$script" ]; then
         script_name=$(basename "$script")
         test_assert "${script_name}の構文チェック" "bash -n $script"
