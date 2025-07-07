@@ -62,10 +62,11 @@ fi
 
 # VSCode configuration
 if [[ -d "$DOTFILES_DIR/config/vscode" ]]; then
-    mkdir -p "$XDG_CONFIG_HOME/vscode"
+    mkdir -p "$HOME/.vscode"
     for vscode_file in "$DOTFILES_DIR/config/vscode"/*; do
         if [[ -f "$vscode_file" ]]; then
-            ln -fnsv "$vscode_file" "$XDG_CONFIG_HOME/vscode/"
+            # XDG unsupported
+            ln -fnsv "$vscode_file" "$HOME/.vscode"
         fi
     done
 fi
