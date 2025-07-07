@@ -84,12 +84,16 @@ fi
 if ! isRunningOnCI; then
     info "=== dotfilesシンボリンク検証 ==="
     
-    # 主要なdotfilesのシンボリンク確認
-    for dotfile in .zshrc .gitconfig; do
-        if [ -f "${DOTFILES_DIR}/${dotfile}" ]; then
-            verify_symlink "${dotfile}のシンボリンク" "${HOME}/${dotfile}" "${DOTFILES_DIR}/${dotfile}"
-        fi
-    done
+    # XDG準拠のシンボリックリンク確認
+    # .zshrc - XDGコンフィグディレクトリに配置
+    if [ -f "${DOTFILES_DIR}/config/zsh/.zshrc" ]; then
+        verify_symlink ".zshrcのXDGシンボリックリンク" "${HOME}/.config/zsh/.zshrc" "${DOTFILES_DIR}/config/zsh/.zshrc"
+    fi
+    
+    # .gitconfig - XDGコンフィグディレクトリに配置
+    if [ -f "${DOTFILES_DIR}/config/git/config" ]; then
+        verify_symlink "git configのXDGシンボリックリンク" "${HOME}/.config/git/config" "${DOTFILES_DIR}/config/git/config"
+    fi
     
     # .Brewfileの特別検証（brew bundle dump --global 対応）
     info "=== .Brewfile検証 ==="
@@ -120,16 +124,16 @@ else
     info "CI環境ではシンボリンクの検証をスキップします"
 fi
 
-# ローカル設定ファイルの検証
-info "=== ローカル設定ファイル検証 ==="
-if [ -f "${HOME}/.zshrc.local" ]; then
-    success "✓ .zshrc.localが作成されています"
+# XDGローカル設定ファイルの検証
+info "=== XDGローカル設定ファイル検証 ==="
+if [ -f "${HOME}/.config/zsh/.zshrc.local" ]; then
+    success "✓ .zshrc.localがXDGディレクトリに作成されています"
 else
     info "ℹ .zshrc.localが存在しません（初回セットアップ後に作成されます）"
 fi
 
-if [ -f "${HOME}/.gitconfig.local" ]; then
-    success "✓ .gitconfig.localが作成されています"
+if [ -f "${HOME}/.config/git/config.local" ]; then
+    success "✓ .gitconfig.localがXDGディレクトリに作成されています"
 else
     info "ℹ .gitconfig.localが存在しません（初回セットアップ後に作成されます）"
 fi
@@ -206,7 +210,7 @@ fi
 # zshプラグイン関連の検証
 info "=== zshプラグイン検証 ==="
 if [ -d "${HOME}/.local/share/zinit" ]; then
-    success "✓ zinitディレクトリが存在します"
+    success "✓ zinitディレクトリがXDGデータディレクトリに存在します"
 else
     info "ℹ zinitがまだインストールされていません（初回zsh起動時にインストールされます）"
 fi

@@ -100,13 +100,13 @@ test_file_exists "makefile" "${DOTFILES_DIR}/makefile"
 test_file_exists "common.sh" "${DOTFILES_DIR}/local/bin/common.sh"
 test_file_exists "init.sh" "${DOTFILES_DIR}/local/bin/init.sh"
 test_file_exists "link.sh" "${DOTFILES_DIR}/local/bin/link.sh"
-test_file_exists "zshrc" "${DOTFILES_DIR}/config/zsh/zshrc"
+test_file_exists "zshrc" "${DOTFILES_DIR}/config/zsh/.zshrc"
 test_file_exists "git config" "${DOTFILES_DIR}/config/git/config"
 test_file_exists ".Brewfile" "${DOTFILES_DIR}/local/share/dotfiles/brewfiles/.Brewfile"
 
 # テンプレートファイルのテスト
 info "=== テンプレートファイルテスト ==="
-test_file_exists "zshrc.local.template" "${DOTFILES_DIR}/config/zsh/zshrc.local.template"
+test_file_exists "zshrc.local.template" "${DOTFILES_DIR}/config/zsh/.zshrc.local.template"
 test_file_exists "git config.local.template" "${DOTFILES_DIR}/config/git/config.local.template"
 
 # スクリプトの構文チェック
@@ -122,13 +122,13 @@ done
 info "=== 設定ファイル基本チェック ==="
 if ! isRunningOnCI; then
     # ローカル環境でのみ実行（シンボリンクが作成されている前提）
-    if [ -f "${HOME}/.zshrc" ]; then
+    if [ -f "${HOME}/.config/zsh/.zshrc" ]; then
         # .zshrcはzsh固有の構文を含むためbash構文チェックは行わない
-        test_file_exists ".zshrc存在確認" "${HOME}/.zshrc"
+        test_file_exists ".zshrc存在確認(XDG)" "${HOME}/.config/zsh/.zshrc"
     fi
 else
     # CI環境では元ファイルの存在確認のみ
-    test_file_exists ".zshrc元ファイル確認" "${DOTFILES_DIR}/config/zsh/zshrc"
+    test_file_exists ".zshrc元ファイル確認" "${DOTFILES_DIR}/config/zsh/.zshrc"
 fi
 
 # 結果の出力
