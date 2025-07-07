@@ -46,7 +46,7 @@ fi
 
 # Claude configuration
 if [[ -d "$DOTFILES_DIR/config/claude" ]]; then
-    mkdir -p "$XDG_CONFIG_HOME/claude"
+    mkdir -p "$HOME/.claude"
     for claude_file in "$DOTFILES_DIR/config/claude"/*; do
         # XDG unsupported
         ln -fnsv "$claude_file" "$HOME/.claude/"
@@ -82,7 +82,6 @@ if [[ -d "$DOTFILES_DIR/local/share/dotfiles/brewfiles" ]]; then
             ln -fnsv "$brewfile" "$XDG_DATA_HOME/dotfiles/brewfiles/"
         fi
     done
-    
 fi
 
 # Package files
