@@ -20,8 +20,11 @@ elif [[ -f "$HOME/.zshrc" ]]; then
     export ZDOTDIR="$HOME"
 fi
 
-[[ -d "$XDG_STATE_HOME"/zsh/history ]] || || mkdir -p "$XDG_STATE_HOME"/zsh/history
 export HISTFILE="$XDG_STATE_HOME"/zsh/history
 
 [[ -d "$XDG_CONFIG_HOME/docker" ]] || mkdir -p "$XDG_CONFIG_HOME/docker"
 export DOCKER_CONFIG="$XDG_CONFIG_HOME"/docker
+
+[[ -d "$XDG_CONFIG_HOME"/aws ]] || mkdir -p "$XDG_CONFIG_HOME"/aws
+export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
+export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config
