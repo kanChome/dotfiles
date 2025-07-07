@@ -1,8 +1,8 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.config/zsh/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME}/p10k-instant-prompt-${(%):-%n}.zsh"
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
 # zinit インストール
@@ -51,19 +51,15 @@ eval "$(anyenv init -)"
 # direnv
 eval "$(direnv hook bash)"
 
-# 個人的なGit設定関数は .zshrc.local に移動しました
-# 個人設定用に .zshrc.local を作成してください
 setopt auto_cd
 function history-all { history -E 1 }
 
 bindkey '^h' zaw-history
-
 bindkey '^R' history-incremental-search-backward
 bindkey '^S' history-incremental-search-forward
-export HISTTIMEFORMAT="%F %T "
 
-HISTFILE="${XDG_STATE_HOME}/zsh/history"
-mkdir -p "${XDG_STATE_HOME}/zsh"
+
+export HISTTIMEFORMAT="%F %T "
 
 # ヒストリに保存するコマンド数
 HISTSIZE=10000
@@ -104,10 +100,12 @@ setopt append_history
 # 履歴をインクリメンタルに追加
 setopt inc_append_history
 
-# プロンプトをカスタマイズするには `p10k configure` を実行するか ~/.p10k.zsh を編集してください。
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-"$ZSH_VERSION"
 
 # ローカルカスタマイズ設定を読み込み（XDG対応）
 [[ ! -f "${XDG_CONFIG_HOME}/zsh/zshrc.local" ]] || source "${XDG_CONFIG_HOME}/zsh/zshrc.local"
 # 後方互換性のため従来の場所もチェック
 [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+
+# To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
+[[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh

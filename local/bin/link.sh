@@ -27,7 +27,6 @@ info "linking XDG configuration files"
 # Zsh configuration
 mkdir -p "$XDG_CONFIG_HOME/zsh"
 
-# .zshenv (XDG Base Directory環境変数設定)
 if [[ -f "$DOTFILES_DIR/.zshenv" ]]; then
     # 初期化サイクルで先に読み込ませる必要があるため、$HOMEに配置
     ln -fnsv "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
@@ -36,6 +35,11 @@ fi
 # .zshrc (メイン設定ファイル)
 if [[ -f "$DOTFILES_DIR/config/zsh/.zshrc" ]]; then
     ln -fnsv "$DOTFILES_DIR/config/zsh/.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
+fi
+
+# p10k
+if [[ -f "$DOTFILES_DIR/config/zsh/.p10k.zsh" ]]; then
+    ln -fnsv "$DOTFILES_DIR/config/zsh/.p10k.zsh" "$XDG_CONFIG_HOME/zsh/.p10k.zsh"
 fi
 
 # Git configuration
