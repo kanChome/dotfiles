@@ -110,7 +110,7 @@ setup_shell_integration() {
         
         error "anyenv binary not found after installation"
         warning "This may be a temporary issue, anyenv might still work after shell restart"
-        warning "Try running: source ~/.zshrc"
+        warning "Try running: source ~/.config/zsh/.zshrc"
         # CI環境では警告のみでエラーにしない
         if isRunningOnCI; then
             warning "Continuing in CI mode despite missing binary"
@@ -122,11 +122,10 @@ setup_shell_integration() {
     return 0
 }
 
-install_language_env() {
+install_language_manager() {
     local env_name="$1"
-    local version="$2"
     
-    info "Setting up $env_name environment"
+    info "Installing $env_name environment manager"
     
     if isRunningOnCI; then
         info "Skipping $env_name installation in CI environment"
@@ -143,26 +142,53 @@ install_language_env() {
         fi
     fi
     
-    if anyenv versions "$env_name" >/dev/null 2>&1; then
+    if command -v "$env_name" >/dev/null 2>&1; then
         success "$env_name is already installed"
+        return 0
+    fi
+    
+    info "Installing $env_name through anyenv"
+    if timeout 600 anyenv install "$env_name"; then
+        success "$env_name installed successfully"
     else
-        info "Installing $env_name"
-        if timeout 300 anyenv install "$env_name"; then
-            success "$env_name installed successfully"
-        else
-            error "Failed to install $env_name (timeout or error)"
-            return 1
-        fi
+        error "Failed to install $env_name (timeout or error)"
+        return 1
     fi
     
     eval "$(anyenv init -)"
+    return 0
+}
+
+install_language_version() {
+    local env_name="$1"
+    local version="$2"
+    
+    info "Installing $env_name version $version"
+    
+    if isRunningOnCI; then
+        info "Skipping $env_name version installation in CI environment"
+        return 0
+    fi
+    
+    if ! command -v "$env_name" >/dev/null 2>&1; then
+        error "$env_name is not installed"
+        return 1
+    fi
     
     # 指定バージョンがインストール済みかチェック
     if "$env_name" versions | grep -q "$version"; then
         success "$env_name $version is already installed"
     else
         info "Installing $env_name $version (this may take several minutes)"
-        if timeout 600 "$env_name" install "$version"; then
+        if [ "$env_name" = 'jenv' ]; then
+            if timeout 300 "$env_name" add "$version"; then
+                success "$env_name $version installed successfully"
+            else
+                error "Failed to install $env_name $version (timeout or error)"
+                warning "You can install it manually later with: $env_name install $version"
+                return 1
+            fi
+        elif timeout 300 "$env_name" install "$version"; then
             success "$env_name $version installed successfully"
         else
             error "Failed to install $env_name $version (timeout or error)"
@@ -183,10 +209,29 @@ install_language_env() {
     return 0
 }
 
-# 最新の推奨バージョンを取得する関数
+install_language_setup() {
+    local env_name="$1"
+    local version="$2"
+    
+    info "Setting up $env_name environment"
+    
+    if ! install_language_manager "$env_name"; then
+        error "Failed to install $env_name manager"
+        return 1
+    fi
+    
+    if ! install_language_version "$env_name" "$version"; then
+        warning "$env_name version $version installation failed (manager is available)"
+        return 1
+    fi
+    
+    success "$env_name $version setup completed"
+    return 0
+}
+
 get_versions() {
     JAVA_VERSION="21.0.2"
-    NODE_VERSION="20.11.1"
+    NODE_VERSION="22.17.0"
     GO_VERSION="1.22.1"
     
     debug "Using versions: Java $JAVA_VERSION, Node $NODE_VERSION, Go $GO_VERSION"
@@ -244,20 +289,20 @@ main() {
     
     info "Installing language environments..."
     
-    if ! install_language_env "jenv" "$JAVA_VERSION"; then
+    if ! install_language_setup "jenv" "$JAVA_VERSION"; then
         warning "Java environment setup failed (non-critical)"
     fi
     
-    if ! install_language_env "nodenv" "$NODE_VERSION"; then
+    if ! install_language_setup "nodenv" "$NODE_VERSION"; then
         warning "Node.js environment setup failed (non-critical)"
     fi
     
-    if ! install_language_env "goenv" "$GO_VERSION"; then
+    if ! install_language_setup "goenv" "$GO_VERSION"; then
         warning "Go environment setup failed (non-critical)"
     fi
     
     success "anyenv setup completed successfully"
-    info "Please restart your shell or run: source ~/.zshrc"
+    info "Please restart your shell or run: source ~/.config/zsh/.zshrc"
     info "Available commands:"
     info "  anyenv install <env>     # Install language environment"
     info "  anyenv update           # Update all environments"
