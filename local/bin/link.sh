@@ -64,13 +64,29 @@ if [[ -f "$DOTFILES_DIR/config/iterm2/com.googlecode.iterm2.plist" ]]; then
     ln -fnsv "$DOTFILES_DIR/config/iterm2/com.googlecode.iterm2.plist" "$XDG_CONFIG_HOME/iterm2/com.googlecode.iterm2.plist"
 fi
 
-# VSCode configuration
+# tmux configuration
+if [[ -f "$DOTFILES_DIR/config/tmux/tmux.conf" ]]; then
+    mkdir -p "$XDG_CONFIG_HOME/tmux"
+    ln -fnsv "$DOTFILES_DIR/config/tmux/tmux.conf" "$XDG_CONFIG_HOME/tmux/tmux.conf"
+fi
+
+# act configuration
+if [[ -f "$DOTFILES_DIR/config/act/actrc" ]]; then
+    mkdir -p "$XDG_CONFIG_HOME/act"
+    ln -fnsv "$DOTFILES_DIR/config/act/actrc" "$XDG_CONFIG_HOME/act/actrc"
+fi
+
+# VSCode configuration (macOS対応)
 if [[ -d "$DOTFILES_DIR/config/vscode" ]]; then
-    mkdir -p "$HOME/.vscode"
-    for vscode_file in "$DOTFILES_DIR/config/vscode"/*; do
+    if isRunningOnMac; then
+        VSCODE_DIR="$HOME/Library/Application Support/Code/User"
+    else
+        VSCODE_DIR="$HOME/.vscode" 
+    fi
+    mkdir -p "$VSCODE_DIR"
+    for vscode_file in "$DOTFILES_DIR/config/vscode"/*.json; do
         if [[ -f "$vscode_file" ]]; then
-            # XDG unsupported
-            ln -fnsv "$vscode_file" "$HOME/.vscode"
+            ln -fnsv "$vscode_file" "$VSCODE_DIR/"
         fi
     done
 fi
