@@ -81,13 +81,12 @@ if [[ -d "$DOTFILES_DIR/config/vscode" ]]; then
     if isRunningOnMac; then
         VSCODE_DIR="$HOME/Library/Application Support/Code/User"
     else
-        VSCODE_DIR="$HOME/.vscode" 
+        VSCODE_DIR="$HOME/.vscode"
     fi
     mkdir -p "$VSCODE_DIR"
     for vscode_file in "$DOTFILES_DIR/config/vscode"/*.json; do
-        if [[ -f "$vscode_file" ]]; then
-            ln -fnsv "$vscode_file" "$VSCODE_DIR/"
-        fi
+        [[ -f "$vscode_file" ]] || continue
+        ln -fnsv "$vscode_file" "$VSCODE_DIR/"
     done
 fi
 
