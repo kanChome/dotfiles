@@ -28,3 +28,6 @@ export DOCKER_CONFIG="$XDG_CONFIG_HOME"/docker
 [[ -d "$XDG_CONFIG_HOME"/aws ]] || mkdir -p "$XDG_CONFIG_HOME"/aws
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
 export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config
+
+[[ -d "$XDG_STATE_HOME"/less/history ]] || mkdir -p "$XDG_STATE_HOME"/less/history
+export LESSHISTFILE="$XDG_STATE_HOME"/less/history
