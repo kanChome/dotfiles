@@ -7,7 +7,7 @@ if isRunningOnMac; then
   info "Edit defaults"
 else
   info "Skip defaults"
-  return 0
+  exit 0
 fi
 
 info "Edit defaults"
@@ -18,7 +18,7 @@ defaults write com.apple.dock autohide -bool true
 defaults write com.apple.finder AppleShowAllFiles -bool true
 
 ## .DS_Storeが作成されないようにする
-defaults write com.apple.desktopservices DSDontWriteNetworkStores true
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 
 ## キーのリピートを速くする
 defaults write -g InitialKeyRepeat -int 10
@@ -32,8 +32,8 @@ defaults write com.apple.dock autohide-delay -float 0
 defaults write com.apple.dock autohide-time-modifier -float 0.5
 
 ## マウス,トラックパットの速度を速くする
-defaults write "Apple Global Domain" com.apple.mouse.scaling 11
-defaults write -g com.apple.trackpad.scaling 3
+defaults write -g com.apple.mouse.scaling -float 11
+defaults write -g com.apple.trackpad.scaling -float 3
 
 ## このアプリケーションを開いてもよろしいですか？のダイアログを無効化
 defaults write com.apple.LaunchServices LSQuarantine -bool false
@@ -45,12 +45,12 @@ defaults write com.apple.dock scroll-to-open -bool true
 defaults write com.googlecode.iterm2 PromptOnQuit -bool false
 
 # 数字を常に半角にする
-defaults write com.apple.inputmethod.Kotoeri JIMPrefFullWidthNumeralCharactersKey 0
+defaults write com.apple.inputmethod.Kotoeri JIMPrefFullWidthNumeralCharactersKey -int 0
 
 for app in "Dock" \
   "Finder" \
   "SystemUIServer"; do
-  killall "$app" &> /dev/null
+  killall "$app" &> /dev/null || true
 done
 
 success "Success to edit defaults"
