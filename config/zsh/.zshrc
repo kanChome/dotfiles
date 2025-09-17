@@ -27,10 +27,8 @@ zinit snippet PZTM::helper
 
 # Homebrew設定 - 動的検出と設定
 if command -v brew >/dev/null 2>&1; then
-  # HomebrewがPATHに存在する場合、シェル環境の設定のみ実行
   eval "$(brew shellenv)"
 else
-  # Homebrewを検索して初期化を試行
   for brew_path in "/opt/homebrew" "/usr/local" "/home/linuxbrew/.linuxbrew"; do
     if [ -x "${brew_path}/bin/brew" ]; then
       eval "$(${brew_path}/bin/brew shellenv)"
@@ -63,42 +61,54 @@ export HISTTIMEFORMAT="%F %T "
 
 # ヒストリに保存するコマンド数
 HISTSIZE=10000
-
 # ヒストリファイルに保存するコマンド数
-SAVEHIST=10000
+SAVEHIST=100000
+HISTFILESIZE=100000
 
-# ターミナル間で履歴を共有
-setopt share_history
+function setOptionOfHistory() {
+  # ターミナル間で履歴を共有
+  setopt share_history
 
-# タイムスタンプ、コマンド実行時間を記録
-setopt EXTENDED_HISTORY
+  # タイムスタンプ、コマンド実行時間を記録
+  setopt EXTENDED_HISTORY
 
-# スペース始まりのコマンドはヒストリに残さない
-setopt hist_ignore_space
+  # スペース始まりのコマンドはヒストリに残さない
+  setopt hist_ignore_space
 
-# 履歴展開後にコマンドを自動的に実行するのではなく、ユーザーが確認できるようにする
-setopt hist_verify
+  # 履歴展開後にコマンドを自動的に実行するのではなく、ユーザーが確認できるようにする
+  setopt hist_verify
 
-# 履歴に保存されるコマンド行の先頭、末尾の空白を削除
-setopt hist_reduce_blanks
+  # 履歴に保存されるコマンド行の先頭、末尾の空白を削除
+  setopt hist_reduce_blanks
 
-# 連続する重複コマンドを履歴に1回だけ保存
-setopt hist_save_no_dups
+  # 連続する重複コマンドを履歴に1回だけ保存
+  setopt hist_save_no_dups
 
-# 履歴展開を有効化
-setopt hist_expand
+  # 履歴展開を有効化
+  setopt hist_expand
 
-# 重複するコマンド行は古い方を削除
-setopt hist_ignore_all_dups
+  # 重複するコマンド行は古い方を削除
+  setopt hist_ignore_all_dups
 
-# 直前と同じコマンドラインはヒストリに追加しない
-setopt hist_ignore_dups
+  # 直前と同じコマンドラインはヒストリに追加しない
+  setopt hist_ignore_dups
 
-# 履歴を追加 (毎回 .zsh_history を作るのではなく)
-setopt append_history
+  # 履歴を追加 (毎回 .zsh_history を作るのではなく)
+  setopt append_history
 
-# 履歴をインクリメンタルに追加
-setopt inc_append_history
+  # 履歴をインクリメンタルに追加
+  setopt inc_append_history
+
+  # historyコマンドは履歴に登録しない
+  setopt hist_no_store
+}
+
+setOptionOfHistory
+
+# 補完候補を詰めて表示
+setopt list_packed
+# ピープオンを鳴らさない
+setopt no_beep
 
 compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-"$ZSH_VERSION"
 
@@ -108,4 +118,7 @@ compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-"$ZSH_VERSION"
 [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/.p10k.zsh.
-[[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh
+[[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh 
+
+# gradle
+export PATH="/opt/homebrew/opt/gradle@8/bin:$PATH"
