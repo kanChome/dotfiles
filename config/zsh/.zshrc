@@ -122,3 +122,12 @@ compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-"$ZSH_VERSION"
 
 # gradle
 export PATH="/opt/homebrew/opt/gradle@8/bin:$PATH"
+
+# alias
+alias t='tmux attach || tmux'
+alias ta='tmux attach -t'
+alias tn='tmux new -s'
+alias ts='tmux list-sessions'
+alias tk='tmux kill-session -t'
+
+alias dspa='docker system prune -a -f'
