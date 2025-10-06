@@ -3,240 +3,107 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source ${SCRIPT_DIR}/common.sh
 
-# プラットフォーム情報を取得
-PLATFORM_INFO="$(getPlatformInfo)"
-debug "Platform detected: $PLATFORM_INFO"
+# Mac専用: パッケージ管理の薄いフロントエンド
+# サブコマンド:
+#   install        -> Brewfile生成 + brew bundle --global
+#   brew:generate  -> 分離ファイルからBrewfile生成
+#   brew:parse     -> Brewfileを分離ファイルに反映
+#   brew:sync      -> 現在の環境を分離ファイルへ同期
+#   brew:diff      -> 生成Brewfileと現在の環境の差分
+#   status         -> 簡易ステータス表示
 
-# Brewfileを動的に生成する関数
-generate_brewfile() {
-  local brewfile_path="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile"
-  local common_file="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile.common"
-  local macos_file="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile.macos"
-  
-  info "Generating Brewfile for current platform"
-  
-  # 分離ファイルの存在チェック
-  if [[ ! -f "$common_file" ]]; then
-    error "Common Brewfile not found: $common_file"
-    return 1
-  fi
-  
-  # ヘッダーを追加
-  cat > "$brewfile_path" << 'EOF'
-# メインBrewfile - このファイルは packages.sh によって自動生成されます
-# 直接編集せず、.Brewfile.common や .Brewfile.macos を編集してください
-# 
-# 新しいパッケージの追加方法:
-# 1. 分離ファイルを直接編集: vim .Brewfile.common または .Brewfile.macos
-# 2. brew install後に同期: make packages-sync (Phase 2で実装予定)
+BREWFILES_DIR="$(getDotfilesDir)/local/share/dotfiles/brewfiles"
+BREWFILE="$BREWFILES_DIR/Brewfile"
+COMMON_FILE="$BREWFILES_DIR/Brewfile.common"
+MACOS_FILE="$BREWFILES_DIR/Brewfile.macos"
 
-EOF
-  
-  # 共通パッケージを追加
-  cat "$common_file" >> "$brewfile_path"
-  
-  # プラットフォーム固有パッケージを追加
-  if isRunningOnMac && [[ -f "$macos_file" ]]; then
-    echo "" >> "$brewfile_path"
-    echo "# macOS固有パッケージ" >> "$brewfile_path"
-    cat "$macos_file" >> "$brewfile_path"
+require_macos() {
+  if ! isRunningOnMac; then
+    error "このスクリプトはmacOS専用です (detected: $(getPlatformInfo))"
+    exit 1
   fi
-  
-  success "Brewfile generated successfully: $brewfile_path"
-  
-  # brew bundle dump との互換性チェック
+}
+
+ensure_brew() {
+  if ! isHomebrewInstalled; then
+    error "Homebrewが未インストールです。先に 'make init' を実行してください。"
+    exit 1
+  fi
+}
+
+brew_generate() {
+  require_macos
+  "$SCRIPT_DIR/parse-brewfile.sh" generate
+}
+
+brew_parse() {
+  require_macos
+  "$SCRIPT_DIR/parse-brewfile.sh" parse
+}
+
+brew_sync() {
+  require_macos
+  "$SCRIPT_DIR/parse-brewfile.sh" sync
+}
+
+brew_diff() {
+  require_macos
+  "$SCRIPT_DIR/parse-brewfile.sh" diff
+}
+
+status() {
+  require_macos
+  info "Platform: $(getPlatformInfo)"
+  info "Homebrew: $(isHomebrewInstalled && echo 'installed' || echo 'missing')"
+  info "Brewfiles dir: $BREWFILES_DIR"
+  if [ -f "$COMMON_FILE" ]; then
+    info "  common: $(grep -c '^[^#[:space:]]' "$COMMON_FILE" 2>/dev/null || echo 0) entries"
+  else
+    warning "  common file not found: $COMMON_FILE"
+  fi
+  if [ -f "$MACOS_FILE" ]; then
+    info "  macos : $(grep -c '^[^#[:space:]]' "$MACOS_FILE" 2>/dev/null || echo 0) entries"
+  fi
+  if [ -f "$BREWFILE" ]; then
+    info "  Brewfile present: $BREWFILE"
+  else
+    warning "  Brewfile not generated yet"
+  fi
   if [[ -L "$HOME/.Brewfile" ]]; then
-    debug "~/.Brewfile is correctly linked to dotfiles"
+    success "~/.Brewfile symlink is present"
   else
-    warning "~/.Brewfile is not linked to dotfiles"
-    info "Run 'make link' to fix this"
+    warning "~/.Brewfile symlink not found (run 'make link')"
   fi
 }
 
-# Ubuntu/Debianでのパッケージインストール
-install_ubuntu_packages() {
-  info "Installing Ubuntu/Debian packages"
-  
-  # パッケージリストを読み込み
-  local packages_file="$(getDotfilesDir)/local/share/dotfiles/packages/ubuntu"
-  
-  if [ ! -f "$packages_file" ]; then
-    error "Ubuntu packages file not found: $packages_file"
-    return 1
-  fi
-  
-  # パッケージファイルを実行して配列を読み込み
-  source "$packages_file"
-  
-  # システムパッケージリストを更新
-  info "Updating apt package list"
-  sudo apt update
-  
-  # APTパッケージをインストール
-  if [ ${#apt_packages[@]} -gt 0 ]; then
-    info "Installing APT packages"
-    for package in "${apt_packages[@]}"; do
-      info "Installing apt package: $package"
-      sudo apt install -y "$package" || warning "Failed to install: $package"
-    done
-  fi
-  
-  # snapdがインストールされているかチェック
-  if command -v snap >/dev/null 2>&1; then
-    # Snapパッケージをインストール
-    if [ ${#snap_packages[@]} -gt 0 ]; then
-      info "Installing Snap packages"
-      for package in "${snap_packages[@]}"; do
-        info "Installing snap package: $package"
-        sudo snap install $package || warning "Failed to install snap: $package"
-      done
-    fi
-  else
-    warning "snapd is not installed. Skipping snap packages."
-    info "To install snapd: sudo apt install snapd"
-  fi
-  
-  # Google Chrome（個別処理）
-  install_google_chrome_ubuntu
-  
-  success "Ubuntu packages installation completed"
+install_macos() {
+  require_macos
+  ensure_brew
+  info "Brewfileを生成します"
+  brew_generate
+  info "Homebrewでインストールします (brew bundle --global)"
+  brew bundle --global
+  success "macOSパッケージのインストールが完了しました"
 }
 
-# Google Chrome for Ubuntu
-install_google_chrome_ubuntu() {
-  if command -v google-chrome >/dev/null 2>&1; then
-    info "Google Chrome is already installed"
-    return 0
-  fi
-  
-  info "Installing Google Chrome"
-  
-  # GPGキーを追加
-  curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
-  
-  # リポジトリを追加
-  echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-  
-  # パッケージリストを更新してインストール
-  sudo apt update
-  sudo apt install -y google-chrome-stable || warning "Failed to install Google Chrome"
-}
-
-# VSCode拡張機能をインストール
-install_vscode_extensions() {
-  if ! command -v code >/dev/null 2>&1; then
-    warning "VSCode is not installed. Skipping extension installation."
-    return 0
-  fi
-  
-  info "Installing VSCode extensions"
-  
-  # 共通ファイルからVSCode拡張機能を抽出してインストール
-  local common_file="$(getDotfilesDir)/local/share/dotfiles/brewfiles/Brewfile.common"
-  
-  if [ -f "$common_file" ]; then
-    grep '^vscode ' "$common_file" | while read -r line; do
-      local extension=$(echo "$line" | sed 's/vscode "\(.*\)"/\1/')
-      info "Installing VSCode extension: $extension"
-      code --install-extension "$extension" || warning "Failed to install extension: $extension"
-    done
-  else
-    warning "Common Brewfile not found, skipping VSCode extensions"
-  fi
-  
-  success "VSCode extensions installation completed"
-}
-
-# Windowsでのパッケージインストール
-install_windows_packages() {
-  info "Installing Windows packages"
-  
-  # パッケージリストを確認
-  local packages_file="$(getDotfilesDir)/local/share/dotfiles/packages/windows"
-  
-  if [ ! -f "$packages_file" ]; then
-    error "Windows packages file not found: $packages_file"
-    return 1
-  fi
-  
-  # Wingetが利用可能かチェック
-  if ! command -v winget >/dev/null 2>&1; then
-    error "winget is not installed or not available"
-    warning "Please install winget or use Windows 10 version 1809 or later"
-    return 1
-  fi
-  
-  # パッケージソースを更新
-  info "Updating winget package sources"
-  winget source update
-  
-  # パッケージをインポート
-  info "Installing packages from .packages.windows"
-  winget import -i "$packages_file" --accept-source-agreements --accept-package-agreements || warning "Some packages may have failed to install"
-  
-  # VSCode拡張機能もインストール
-  install_vscode_extensions
-  
-  success "Windows packages installation completed"
-}
-
-# メイン処理
 main() {
-  info "Starting package installation for platform: $PLATFORM_INFO"
-  
-  case "$PLATFORM_INFO" in
-    macos-*|macos)
-      # macOSの場合
-      if ! isHomebrewInstalled; then
-        error "Homebrew is not installed. Please run init.sh first."
-        exit 1
-      fi
-      
-      generate_brewfile
-      info "Installing packages with Homebrew"
-      brew bundle --global
-      success "macOS packages installed successfully"
-      ;;
-      
-    wsl2-ubuntu|linux-ubuntu|linux-debian)
-      # Ubuntu/Debianの場合
-      install_ubuntu_packages
-      
-      # Linuxbrewも利用可能な場合は共通パッケージをインストール
-      if isHomebrewInstalled; then
-        info "Installing CLI tools with Linuxbrew"
-        generate_brewfile
-        brew bundle --global
-      else
-        warning "Linuxbrew is not installed. Skipping CLI tools installation."
-        info "To install Linuxbrew, run: /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-      fi
-      
-      install_vscode_extensions
-      success "Ubuntu/Debian packages installed successfully"
-      ;;
-      
-    windows)
-      # Windowsの場合
-      install_windows_packages
-      success "Windows packages installed successfully"
-      ;;
-      
+  local cmd="${1:-install}"
+  case "$cmd" in
+    install)       install_macos ;;
+    brew:generate) brew_generate ;;
+    brew:parse)    brew_parse ;;
+    brew:sync)     brew_sync ;;
+    brew:diff)     brew_diff ;;
+    status)        status ;;
     *)
-      warning "Unsupported platform: $PLATFORM_INFO"
-      warning "Supported platforms: macOS, Ubuntu/Debian on WSL2 or native Linux, Windows"
-      
-      # Homebrewが利用可能な場合は最低限のパッケージをインストール
-      if isHomebrewInstalled; then
-        info "Installing CLI tools with Homebrew/Linuxbrew"
-        generate_brewfile
-        brew bundle --global
-      fi
+      error "不明なコマンド: $cmd"
+      echo "利用可能: install | brew:generate | brew:parse | brew:sync | brew:diff | status"
+      exit 1
       ;;
   esac
-  
-  success "Package installation completed for $PLATFORM_INFO"
 }
+
+main "$@"
 
 # デバッグ情報を出力
 if [ "${DEBUG:-}" = "1" ]; then

@@ -3,14 +3,13 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source ${SCRIPT_DIR}/common.sh
 
-# Phase 2: Brewfile双方向変換機能
-# このスクリプトは .Brewfile を解析して分離ファイルに逆変換します
-
+# Brewfile双方向変換（Mac中心）。リポジトリ標準ディレクトリに統一
 DOTFILES_DIR="$(getDotfilesDir)"
-BREWFILE="$DOTFILES_DIR/.Brewfile"
-COMMON_FILE="$DOTFILES_DIR/.Brewfile.common"
-MACOS_FILE="$DOTFILES_DIR/.Brewfile.macos"
-BACKUP_DIR="$DOTFILES_DIR/.backups"
+BREWFILES_DIR="$DOTFILES_DIR/local/share/dotfiles/brewfiles"
+BREWFILE="$BREWFILES_DIR/Brewfile"
+COMMON_FILE="$BREWFILES_DIR/Brewfile.common"
+MACOS_FILE="$BREWFILES_DIR/Brewfile.macos"
+BACKUP_DIR="$BREWFILES_DIR/.backups"
 DRY_RUN=false
 FORCE=false
 
@@ -23,8 +22,8 @@ parse-brewfile.sh - Brewfile双方向変換ツール
   parse-brewfile.sh [OPTIONS] [COMMAND]
 
 コマンド:
-  generate    分離ファイルから .Brewfile を生成（デフォルト）
-  parse       .Brewfile を解析して分離ファイルに同期
+  generate    分離ファイルから Brewfile を生成（デフォルト）
+  parse       Brewfile を解析して分離ファイルに同期
   sync        brew bundle dump → 分離ファイル同期
   diff        現在のインストール状況と分離ファイルの差分表示
 
@@ -35,8 +34,8 @@ parse-brewfile.sh - Brewfile双方向変換ツール
   -v, --verbose    詳細ログを表示
 
 例:
-  parse-brewfile.sh                    # .Brewfile生成
-  parse-brewfile.sh parse              # .Brewfile解析
+  parse-brewfile.sh                    # Brewfile生成
+  parse-brewfile.sh parse              # Brewfile解析
   parse-brewfile.sh sync -d            # dry-runで同期確認
   parse-brewfile.sh diff               # 差分表示
 
@@ -157,7 +156,7 @@ parse_brewfile() {
     local brewfile="$1"
     
     if [ ! -f "$brewfile" ]; then
-        error "Brewfile not found: $brewfile"
+    error "Brewfile not found: $brewfile"
         return 1
     fi
     
@@ -349,7 +348,7 @@ show_diff() {
 
 # 分離ファイルから .Brewfile 生成
 generate_brewfile_from_separated() {
-    info "Generating .Brewfile from separated files"
+    info "Generating Brewfile from separated files"
     
     if [ ! -f "$COMMON_FILE" ]; then
         error "Common file not found: $COMMON_FILE"
@@ -362,9 +361,9 @@ generate_brewfile_from_separated() {
     
     # ヘッダーを生成
     cat > "$BREWFILE" << 'EOF'
-# メインBrewfile - このファイルは packages.sh によって自動生成されます
-# 直接編集せず、.Brewfile.common や .Brewfile.macos を編集してください
-# 
+# メインBrewfile - このファイルは parse-brewfile.sh によって自動生成されます
+# 直接編集せず、Brewfile.common や Brewfile.macos を編集してください
+#
 # 新しいパッケージの追加方法:
 # 1. 分離ファイルを直接編集: vim .Brewfile.common または .Brewfile.macos
 # 2. brew install後に同期: make packages-sync
